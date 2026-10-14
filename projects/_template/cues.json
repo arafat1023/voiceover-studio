@@ -1,0 +1,15 @@
+{
+  "_help": "Per scene, events in narration order. 'at' = a piece of that scene's narration text. 'box' = [x, y, w, h] in the screenshot's own pixels. Shots are shots/<name>.jpg|png; cards are card/<name>.",
+  "1": [
+    { "at": null, "shot": "card/title" }
+  ],
+  "2": [
+    { "at": null, "shot": "scene-02a" },
+    { "at": "কোর্স তালিকায়", "box": [40, 120, 1480, 520] },
+    { "at": "নতুন কোর্স বাটনে", "box": [1340, 60, 190, 44] },
+    { "at": "সেভ করার পর", "shot": "scene-02b", "box": [40, 160, 1480, 60] }
+  ],
+  "3": [
+    { "at": null, "shot": "card/closing" }
+  ]
+}

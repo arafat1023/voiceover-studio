@@ -1,0 +1,19 @@
+{
+  "name": "My product demo",
+  "voice": "voices/speaker-00737",
+  "speed": 0.9,
+  "credit": "Voice based on Google SLR37 Bengali speech data, CC BY-SA 4.0",
+  "voice_spellings": {
+    "সিএসভি": "সি-এস-ভি",
+    "পিডিএফ": "পি-ডি-এফ"
+  },
+  "fixed_seconds": {
+    "আসসালামু আলাইকুম।": 1.8
+  },
+  "cards": {
+    "logo": "assets/logo.png",
+    "title": { "heading": "পণ্যের নাম", "subtitle": "এক লাইনে কী দেখাচ্ছি" },
+    "closing": { "heading": "শেষ কথা", "subtitle": "ধন্যবাদ" }
+  },
+  "output": "~/Desktop/My-Demo.mp4"
+}

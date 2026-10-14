@@ -1,0 +1,21 @@
+# Heavy, re-downloadable
+# No trailing slash: these may be symlinks to a shared install.
+.venv
+models
+data
+__pycache__/
+
+# Voices: a voice is a real person's (or a corpus speaker's) audio. Keep it out of git; share it
+# only with the speaker's consent. The README.txt / CONSENT.txt next to it may be committed.
+voices/**/*.wav
+voices/**/*.m4a
+voices/**/*.mp3
+# Open-corpus voice (SLR37, CC BY-SA 4.0): redistributable with credit, used by the template.
+!voices/speaker-00737/reference.wav
+# A colleague's cloned voice: consent covers our demos, not publishing his words or name.
+voices/user-voice/
+
+# Projects: client material and generated output. Only the template is tracked.
+projects/*
+!projects/_template/
+*.mp4

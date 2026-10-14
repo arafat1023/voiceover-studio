@@ -1,0 +1,15 @@
+# Python 3.10. Versions are the ones the two Sijdah demos were built with (macOS, Apple Silicon).
+f5_tts @ git+https://github.com/ai4bharat/IndicF5.git@13f7c4d627cc10111aea8fe9c0039462cacacdc7
+torch==2.14.1
+torchaudio==2.11.0
+torchcodec==0.17.0
+vocos==0.1.0
+transformers==5.19.0
+accelerate==1.15.0
+safetensors==0.8.0
+huggingface_hub==1.33.0
+soundfile==0.14.0
+librosa==0.11.0
+numpy==1.26.4
+scipy==1.15.3
+pillow==12.3.0
