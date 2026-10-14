@@ -16,6 +16,7 @@ project.json "insets": {"9": {"image": "shots/scene-09-inset.png", "label": "...
     -> cards/inset-09.png, a framed strip faded into the bottom of that scene's last shot.
 Cues refer to cards as "card/<name>" (e.g. "card/title", "card/map-03").
 """
+import os
 import shutil
 import subprocess
 import sys
@@ -23,7 +24,8 @@ from pathlib import Path
 
 from studio.config import Project
 
-CHROMES = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', 'google-chrome', 'chromium', 'chrome']
+CHROMES = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', 'google-chrome', 'google-chrome-stable',
+           'chromium', 'chromium-browser', 'chrome']
 BN_DIGITS = str.maketrans('0123456789', '০১২৩৪৫৬৭৮৯')
 
 
@@ -93,7 +95,9 @@ def render(project: Project, html: str, out: Path, size: str = '1920,1080') -> N
     work.mkdir(parents=True, exist_ok=True)
     page = work / (out.stem + '.html')
     page.write_text(f'<!doctype html><meta charset="utf-8"><style>{base_css(project)}</style>{html}', encoding='utf-8')
-    subprocess.run([chrome(), '--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
+    # Chrome refuses to start as root (e.g. in a Linux container) unless its sandbox is off.
+    sandbox = ['--no-sandbox'] if hasattr(os, 'geteuid') and os.geteuid() == 0 else []
+    subprocess.run([chrome(), *sandbox, '--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
                     '--force-device-scale-factor=1', f'--window-size={size}', f'--screenshot={out}',
                     f'file://{page}'], check=True, capture_output=True)
 

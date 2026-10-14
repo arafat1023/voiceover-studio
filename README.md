@@ -17,22 +17,86 @@ shots/*.jpg + cues.json ──────────────────�
 
 ## Requirements
 
-- macOS (Apple Silicon recommended) or Linux. On Windows, use WSL.
-- Python 3.10
-- ffmpeg built with **libass** (needed for captions). Homebrew's ffmpeg includes it.
-- Google Chrome (renders the cards so Bangla text shapes correctly)
-- the [Kalpurush](https://www.omicronlab.com/bangla-fonts.html) font
-- about 4 GB of disk space for the model and Python packages
+- macOS (Apple Silicon recommended) or Linux (NVIDIA GPU optional; CPU works, just slower). On Windows, use WSL2 with Ubuntu and follow the Linux steps.
+- about 6 GB of free disk space and 8 GB of RAM
 
 ## Install
 
+### 1. Clone
+
 ```bash
-git clone <this repo> voiceover-studio && cd voiceover-studio
-brew install python@3.10 ffmpeg     # macOS; on Linux use your package manager
-./setup.sh
+git clone https://github.com/arafat1023/voiceover-studio.git
+cd voiceover-studio
 ```
 
-`setup.sh` creates `.venv/`, installs pinned packages and downloads the IndicF5 weights into `models/`. It fetches them from a public mirror. To use the official gated repo instead, accept its terms on Hugging Face, run `hf auth login`, then run `INDICF5_REPO=ai4bharat/IndicF5 ./setup.sh`. Set `WITH_ASR=0` to skip the optional Bengali Whisper download.
+### 2. Install the system tools
+
+You need Python 3.10, ffmpeg with libass, and Google Chrome or Chromium.
+
+**macOS** (with [Homebrew](https://brew.sh)):
+
+```bash
+brew install python@3.10 ffmpeg
+brew install --cask google-chrome      # skip if Chrome is already installed
+```
+
+**Ubuntu / Debian / WSL2:**
+
+```bash
+sudo apt update
+sudo apt install ffmpeg fontconfig curl git
+# Python 3.10 (built in on Ubuntu 22.04; on other versions use the deadsnakes PPA):
+sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.10 python3.10-venv
+# Chrome (x86_64):
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install ./google-chrome-stable_current_amd64.deb
+# ...or Chromium on Debian or ARM: sudo apt install chromium
+```
+
+**Fedora:** `sudo dnf install python3.10 chromium`, plus ffmpeg from [RPM Fusion](https://rpmfusion.org/Configuration).
+
+### 3. Run the setup script
+
+```bash
+./setup.sh                    # macOS, or Linux with an NVIDIA GPU
+TORCH_CPU=1 ./setup.sh        # Linux without an NVIDIA GPU (much smaller PyTorch download)
+```
+
+If a system tool is missing, `setup.sh` stops and prints the exact install command for your OS. Fix it and run the script again; it skips anything already done.
+
+### What gets downloaded
+
+You never download any of these by hand; `setup.sh` handles each one.
+
+| What | Size | From | Where it goes |
+|------|------|------|---------------|
+| Python packages (PyTorch, IndicF5 code, …) | ~1-3 GB | PyPI, GitHub, pytorch.org | `.venv/` |
+| IndicF5 model weights | 1.3 GB | [rsolanki1822/IndicF5-mirror](https://huggingface.co/rsolanki1822/IndicF5-mirror) on Hugging Face | `models/indicf5-base/` |
+| Vocos vocoder | 50 MB | [charactr/vocos-mel-24khz](https://huggingface.co/charactr/vocos-mel-24khz) | `~/.cache/huggingface/` |
+| Bengali Whisper (optional) | 3 GB | [bengaliAI/tugstugi_bengaliai-asr_whisper-medium](https://huggingface.co/bengaliAI/tugstugi_bengaliai-asr_whisper-medium) | `~/.cache/huggingface/` |
+| Kalpurush font (only if missing) | 300 KB | [omicronlab.com](https://www.omicronlab.com/bangla-fonts.html) | `~/Library/Fonts` (macOS), `~/.local/share/fonts` (Linux) |
+
+Options, set before `./setup.sh`:
+
+| Variable | Effect |
+|----------|--------|
+| `TORCH_CPU=1` | CPU-only PyTorch (Linux) |
+| `WITH_ASR=0` | skip Bengali Whisper. It only drafts transcripts when you make a voice; you can type them yourself. |
+| `INDICF5_REPO=ai4bharat/IndicF5` | use the official model instead of the mirror. It's gated: first accept its terms on [the model page](https://huggingface.co/ai4bharat/IndicF5), then run `.venv/bin/hf auth login` |
+| `PYTHON=/path/to/python3.10` | use a specific Python 3.10 |
+
+Optional, downloaded by hand only if you need them:
+
+- **OpenSLR SLR37** (560 MB): only needed to pick a *different* stock voice. Download it with `curl -LO https://www.openslr.org/resources/37/bn_bd.zip && unzip -q bn_bd.zip -d data/slr37-bn-bd`, then run `.venv/bin/python tools/pick_stock_speaker.py data/slr37-bn-bd`. The guide explains how to turn a speaker into a voice.
+- **[Claude in Chrome](https://claude.ai/chrome)**: only if you want Claude Code to take the screenshots for you (see the guide).
+
+### 4. Test it
+
+```bash
+.venv/bin/python -m studio.speak voices/speaker-00737 "আসসালামু আলাইকুম।" test.wav
+```
+
+The first run loads the model, which takes about 30 s. After that, a sentence takes about 5-10 s on Apple Silicon or a GPU, and about 20-60 s on a CPU.
 
 ## Quick start
 
