@@ -20,7 +20,8 @@ hint() {
 }
 
 PY=${PYTHON:-python3.10}
-command -v "$PY" >/dev/null || missing+=("Python 3.10: $(hint 'brew install python@3.10' \
+# Run it, not just look it up: a pyenv shim exists even when that version isn't active.
+"$PY" -c 'import sys; sys.exit(sys.version_info[:2] != (3, 10))' >/dev/null 2>&1 || missing+=("Python 3.10 (or set PYTHON=/path/to/python3.10; with pyenv: PYTHON=\$(pyenv root)/versions/<3.10.x>/bin/python): $(hint 'brew install python@3.10' \
   'sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.10 python3.10-venv' \
   'sudo dnf install python3.10' 'https://www.python.org/downloads/ (or: uv python install 3.10, then PYTHON=$(uv python find 3.10))')")
 
