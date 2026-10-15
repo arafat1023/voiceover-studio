@@ -60,7 +60,7 @@ fi
 .venv/bin/pip install --upgrade pip
 if [ "${TORCH_CPU:-0}" = 1 ]; then
   .venv/bin/pip install --index-url https://download.pytorch.org/whl/cpu \
-    "$(grep '^torch==' requirements.txt)" "$(grep '^torchaudio==' requirements.txt)"
+    "$(grep "^torch==" requirements.txt)" "$(grep "^torchaudio==" requirements.txt)" "$(grep "^torchcodec==" requirements.txt)"
 fi
 .venv/bin/pip install -r requirements.txt
 
