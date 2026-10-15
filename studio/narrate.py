@@ -26,12 +26,15 @@ import argparse
 import json
 import re
 import unicodedata
+from typing import TYPE_CHECKING
 
 import numpy as np
 import soundfile as sf
 
 from studio.config import Project
-from studio.tts import Voice
+
+if TYPE_CHECKING:
+    from studio.tts import Voice
 
 # Sentence ends, and the words that join the last two items of a list, per language.
 SENTENCE_END = {'bn': '।?!:', 'en': '.?!:'}
@@ -126,7 +129,7 @@ class TakeChecker:
         return word_error(text, heard)
 
 
-def best_take(voice: Voice, checker: TakeChecker | None, retakes: int, text: str, spoken: str,
+def best_take(voice: 'Voice', checker: TakeChecker | None, retakes: int, text: str, spoken: str,
               speed: float, seconds: float | None) -> tuple[np.ndarray, int]:
     best = None
     for _ in range(1 + (retakes if checker else 0)):
@@ -161,6 +164,7 @@ def main() -> None:
     out = project.narration
     out.mkdir(parents=True, exist_ok=True)
     (out / 'captions.json').write_text(json.dumps(scenes, ensure_ascii=False, indent=2), encoding='utf-8')
+    from studio.tts import Voice  # imported here so the text logic above works without PyTorch
     voice = Voice(args.voice or project.voice, language=project.language)
     speed = args.speed or project.get('speed', 0.9)
     fixed = project.get('fixed_seconds', {})

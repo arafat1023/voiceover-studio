@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent))  # the repo root, for studio.*
 
 from studio.cards import chrome  # noqa: E402
+
 W, H = 1920, 936
 LEFT, TOP, LINE = 150, 150, 50  # text grid: first line's top edge and line height, in pixels
 PANEL_W = 1620

@@ -1,5 +1,7 @@
 # voiceover-studio
 
+[![CI](https://github.com/arafat1023/voiceover-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/arafat1023/voiceover-studio/actions/workflows/ci.yml) [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE) ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg) ![Bangla | English](https://img.shields.io/badge/languages-Bangla%20%7C%20English-orange.svg)
+
 Make narrated product-demo videos in **Bangla or English**, using a **cloned voice**. Everything runs on your own machine: no cloud TTS service and no per-minute fees.
 
 You provide a script, some screenshots and a short voice recording. You get back a 1080p MP4 with:
@@ -207,7 +209,8 @@ projects/       one folder per video; _template/ (Bangla) and _template-en/ (Eng
 examples/       the README demo projects (English and Bangla), complete and rebuildable
 docs/           GUIDE.md (full workflow), MODELS.md (models, links, licences), media/ (demo videos)
 .claude/skills/ the Claude Code skill (loaded automatically inside the repo)
-setup.sh, requirements.txt (shared), requirements-bn.txt (Bangla), requirements-en.txt (English)
+tests/          unit tests (no models needed), run by CI in .github/workflows/
+setup.sh, requirements.txt (shared), requirements-bn.txt (Bangla), requirements-en.txt (English), requirements-dev.txt (tests)
 ```
 
 ## Not in the repo
@@ -273,6 +276,10 @@ If you run it from another folder, it finds the repo itself, or asks you where i
 - **Screenshots** of a web app need the [Claude in Chrome](https://claude.ai/chrome) extension. Without it, Claude asks you for the screenshots and tells you which screens to capture.
 - **Claude can't hear audio.** It checks words with Whisper, but you judge the voice, accent and pacing.
 - **It always asks first, even in one-shot mode,** before cloning a real person's voice, large downloads (`setup.sh`, models), logging into a site, or when it needs screenshots it can't capture. It does everything else first, then asks these together.
+
+## Contributing
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). CI runs the lint and unit tests on every push. They need no models; the full pipeline is tested by hand on macOS and Linux before each release. Release notes are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 

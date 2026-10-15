@@ -126,7 +126,8 @@ def main() -> None:
     process_map = cards.get('process_map')
     if process_map:
         for lit in range(len(process_map['steps']) + 1):
-            render(project, map_html(process_map['title'], process_map['steps'], lit, project.language), project.cards / f'map-{lit:02d}.png')
+            render(project, map_html(process_map['title'], process_map['steps'], lit, project.language),
+                   project.cards / f'map-{lit:02d}.png')
     for scene, spec in project.get('insets', {}).items():
         render_inset(project, scene, spec)
     print('cards written to', project.cards)

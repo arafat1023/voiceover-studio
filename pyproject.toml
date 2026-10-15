@@ -1,0 +1,16 @@
+# Tool settings only; voiceover-studio is run from the repo (see README), not installed as a package.
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.ruff.lint]
+# pycodestyle errors/warnings, pyflakes, import order, bugbear, and an explicit check= on subprocess.run.
+select = ["E", "W", "F", "I", "B", "PLW1510"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["studio"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

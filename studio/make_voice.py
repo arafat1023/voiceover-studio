@@ -19,7 +19,6 @@ import re
 import subprocess
 from pathlib import Path
 
-import numpy as np
 import soundfile as sf
 
 ASR_MODELS = {'bn': 'bengaliAI/tugstugi_bengaliai-asr_whisper-medium', 'en': 'openai/whisper-small'}
@@ -31,11 +30,11 @@ def to_wav16(src: Path, dst: Path) -> None:
 
 def segments(wav: Path, noise: str = '-30dB', min_pause: float = 0.18) -> list[tuple[float, float]]:
     out = subprocess.run(['ffmpeg', '-hide_banner', '-i', str(wav), '-af', f'silencedetect=noise={noise}:d={min_pause}',
-                          '-f', 'null', '-'], capture_output=True, text=True).stderr
+                          '-f', 'null', '-'], capture_output=True, text=True, check=False).stderr
     starts = [float(x) for x in re.findall(r'silence_start: ([\d.]+)', out)]
     ends = [float(x) for x in re.findall(r'silence_end: ([\d.]+)', out)]
     total = sf.info(str(wav)).duration
-    edges, spans, cursor = sorted(zip(starts, ends)), [], 0.0
+    edges, spans, cursor = sorted(zip(starts, ends, strict=False)), [], 0.0
     for s, e in edges:
         if s - cursor > 0.4:
             spans.append((round(cursor, 2), round(s, 2)))

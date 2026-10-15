@@ -18,7 +18,7 @@ def nvidia_driver() -> str | None:
     if not shutil.which('nvidia-smi'):
         return None
     result = subprocess.run(['nvidia-smi', '--query-gpu=driver_version', '--format=csv,noheader'],
-                            capture_output=True, text=True)
+                            capture_output=True, text=True, check=False)
     return result.stdout.strip().splitlines()[0] if result.returncode == 0 and result.stdout.strip() else None
 
 

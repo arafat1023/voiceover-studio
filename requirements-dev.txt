@@ -1,0 +1,6 @@
+# For running the tests and linters (no models, no PyTorch): pip install -r requirements-dev.txt
+pytest==9.1.1
+ruff==0.17.0
+numpy==1.26.4
+soundfile==0.14.0
+pillow==12.3.0

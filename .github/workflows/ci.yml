@@ -1,0 +1,29 @@
+# Lint and unit tests on every push and pull request. These cover the text, timing, caption and
+# setup logic; they need no models (the full pipeline needs ~6 GB of models, so it is tested by
+# hand on macOS and Linux before each release; see CONTRIBUTING.md).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install test dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check studio tests examples tools
+      - name: Tests
+        run: pytest -q
