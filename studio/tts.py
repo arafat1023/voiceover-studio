@@ -27,6 +27,12 @@ MODEL_DIR = STUDIO_ROOT / 'models' / 'indicf5-base'
 DIT_CONFIG = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, conv_layers=4)
 SAMPLE_RATE = 24000
 BUILTIN = 'builtin'
+LANGUAGE_NAMES = {'bn': 'Bangla', 'en': 'English'}
+
+
+def not_installed(language: str) -> SystemExit:
+    return SystemExit(f'The {LANGUAGE_NAMES[language]} engine is not installed. Add it with: '
+                      f'LANGUAGES={language} ./setup.sh  (this adds it; what is already installed is kept)')
 
 
 def pick_device(requested: str = 'auto') -> str:
@@ -68,9 +74,14 @@ def normalise(audio: np.ndarray) -> np.ndarray:
 
 class IndicF5Engine:
     def __init__(self, voice: Path | None, device: str):
-        from f5_tts.infer.utils_infer import load_model, load_vocoder, preprocess_ref_audio_text
-        from f5_tts.model import DiT
+        try:
+            from f5_tts.infer.utils_infer import load_model, load_vocoder, preprocess_ref_audio_text
+            from f5_tts.model import DiT
+        except ImportError:
+            raise not_installed('bn') from None
         from safetensors.torch import load_file
+        if not (MODEL_DIR / 'model.safetensors').exists():
+            raise not_installed('bn')
         if voice is None:
             raise SystemExit('Bangla needs a voice folder with reference.wav + reference.txt (no built-in voice)')
         self.device = device
@@ -106,7 +117,10 @@ class ChatterboxEngine:
 
     def __init__(self, voice: Path | None, device: str):
         import librosa
-        from chatterbox.tts_turbo import ChatterboxTurboTTS
+        try:
+            from chatterbox.tts_turbo import ChatterboxTurboTTS
+        except ImportError:
+            raise not_installed('en') from None
         self.librosa = librosa
         self.model = ChatterboxTurboTTS.from_pretrained(device=device)
         if voice is not None:

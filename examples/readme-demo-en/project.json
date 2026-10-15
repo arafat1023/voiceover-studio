@@ -1,0 +1,21 @@
+{
+  "name": "README demo (English)",
+  "language": "en",
+  "voice": "builtin",
+  "speed": 0.92,
+  "retakes": 2,
+  "voice_spellings": {
+    "voiceover-studio": "voiceover studio"
+  },
+  "credit": "Voice: Chatterbox Turbo built-in voice (Resemble AI, MIT)",
+  "cards": {
+    "title": {
+      "heading": "voiceover-studio",
+      "subtitle": "Narrated demo videos in a cloned voice, made on your own computer"
+    },
+    "closing": {
+      "heading": "Free and open source",
+      "subtitle": "github.com/arafat1023/voiceover-studio"
+    }
+  }
+}

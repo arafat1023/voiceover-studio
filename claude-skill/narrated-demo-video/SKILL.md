@@ -5,7 +5,7 @@ description: Make a narrated product-demo video in Bangla or English with a loca
 
 # Narrated demo video
 
-Tooling lives in the voiceover-studio repo (default location `~/Documents/Workspace/voiceover-studio`; adjust if cloned elsewhere). Read its README.md and docs/GUIDE.md first; the guide is the full manual. Run everything from that folder as `.venv/bin/python -m studio.<module> projects/<name>`. If `.venv` or `models/` is missing, run `./setup.sh` (it needs Python 3.12).
+Tooling lives in the voiceover-studio repo (default location `~/Documents/Workspace/voiceover-studio`; adjust if cloned elsewhere). Read its README.md and docs/GUIDE.md first; the guide is the full manual. Run everything from that folder as `.venv/bin/python -m studio.<module> projects/<name>`. If `.venv` is missing, run `./setup.sh` (it needs Python 3.12): `LANGUAGES=bn` or `LANGUAGES=en` installs one language only, and re-running with a language adds it. If narration stops with "The … engine is not installed", run the command it prints.
 
 ## Workflow
 

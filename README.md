@@ -9,6 +9,19 @@ You provide a script, some screenshots and a short voice recording. You get back
 - burned-in captions, synced phrase by phrase
 - title and closing cards, step-by-step process diagrams and picture-in-picture insets
 
+## Demo
+
+[![voiceover-studio demo: script, highlights, three commands, finished video](docs/media/preview.gif)](docs/media/demo-en.mp4)
+
+▶ Watch with sound: **[English demo](docs/media/demo-en.mp4)** (49 s) · **[Bangla demo](docs/media/demo-bn.mp4)** (48 s)
+🔊 Just the voices: [English sample](docs/media/sample-en.mp3) · [Bangla sample](docs/media/sample-bn.mp3)
+
+Both videos were made with voiceover-studio itself:
+- **English:** Chatterbox's built-in voice
+- **Bangla:** the bundled open-corpus voice, `voices/speaker-00737`
+
+Their projects are in [examples/](examples/), so you can rebuild them or copy one to start your own.
+
 ```
 pitch.md ──narrate──▶ narration/*.wav + timings.json ─┐
 project.json ──cards──▶ cards/*.png ──────────────────┼──build──▶ video.mp4
@@ -20,14 +33,15 @@ shots/*.jpg + cues.json ──────────────────�
 | Bangla (`"language": "bn"`, the default) | [IndicF5](https://github.com/AI4Bharat/IndicF5) | from 8-12 s of speech **plus its exact transcript** | MIT |
 | English (`"language": "en"`) | [Chatterbox Turbo](https://github.com/resemble-ai/chatterbox) | from 5+ s of speech, no transcript; or its built-in voice | MIT |
 
-Any voice can speak either language. A Bangla speaker's clip can narrate in English, and the reverse.
+Any voice can speak either language. A Bangla speaker's clip can narrate in English, and the reverse. **You choose at install time which languages to set up: Bangla, English or both.** Each needs only its own engine (see [Install, step 3](#3-run-the-setup-script)).
 
 ## Requirements
 
 - macOS (Apple Silicon recommended) or Linux (an NVIDIA GPU is optional; CPU works, just much slower). On Windows, use WSL2 with Ubuntu and follow the Linux steps.
 - **Python 3.12**, a recent patch release (3.12.13 or later is known to work)
 - ffmpeg with libass, and Google Chrome or Chromium
-- about 12 GB of free disk space (6 GB for Bangla only) and 8 GB of RAM (16 GB recommended)
+- free disk space: about 6 GB for Bangla only, 8 GB for English only, 13 GB for both (each a bit less with `WITH_ASR=0`)
+- 8 GB of RAM (16 GB recommended)
 
 ## Install
 
@@ -64,26 +78,51 @@ sudo apt install ./google-chrome-stable_current_amd64.deb
 
 ### 3. Run the setup script
 
+**Choose your languages.** Install only what you need:
+
+| You want | Command | Disk space (approx.) |
+|----------|---------|----------------------|
+| Bangla and English (default) | `./setup.sh` | 13 GB |
+| Bangla only | `LANGUAGES=bn ./setup.sh` | 6 GB |
+| English only | `LANGUAGES=en ./setup.sh` | 8 GB |
+
+**Add a language later** by running setup again with that language, e.g. `LANGUAGES=en ./setup.sh` on a Bangla-only install. It adds English and keeps everything already installed. Nothing is ever removed; to drop a language, delete `.venv` and run setup again with only the languages you want. A project in a language that isn't installed stops with a message telling you which command adds it.
+
+**Then add your hardware option** to the same command if needed:
+
 ```bash
-./setup.sh                    # macOS, or Linux with an NVIDIA GPU
+./setup.sh                    # macOS, or Linux with an NVIDIA GPU (driver 580+)
+TORCH_CUDA=cu126 ./setup.sh   # Linux with an NVIDIA GPU on an older driver (about 525-579)
 TORCH_CPU=1 ./setup.sh        # Linux without an NVIDIA GPU (much smaller PyTorch download)
 ```
+
+Both kinds of option combine, e.g. `LANGUAGES=en TORCH_CPU=1 ./setup.sh` for English only on a Linux machine without a GPU.
+
+At the end, setup prints the device the voice models will use: `mps` (Apple Silicon), `cuda` (NVIDIA) or `cpu`. If there's an NVIDIA GPU that PyTorch can't use, it says why and how to fix it. Run the same check any time with `.venv/bin/python -m studio.device`.
+
+**NVIDIA GPUs on Linux.**
+- The default PyTorch for Linux is built for CUDA 13, which needs NVIDIA driver **580 or newer**. Check yours with `nvidia-smi`. On an older driver, use `TORCH_CUDA=cu126` (CUDA 12.6), or update the driver.
+- Without a working GPU everything still runs on the CPU, just much more slowly: a long video can take hours instead of minutes.
+- To switch PyTorch builds later, delete `.venv` first (`rm -rf .venv`), because setup keeps an existing PyTorch.
+- *Not tested on real hardware yet:* GPU on Linux uses the standard PyTorch CUDA builds and the device is picked automatically, but this project has so far been tested on Apple Silicon and on CPU-only Linux. Reports from NVIDIA users are welcome.
 
 If a system tool is missing, `setup.sh` stops and prints the exact install command for your OS. Fix it and run the script again; it skips anything already done. If `python3.12` isn't on your PATH (pyenv, uv), point at it: `PYTHON=/path/to/python3.12 ./setup.sh`.
 
 ### What gets downloaded
 
-You never download any of these by hand; `setup.sh` handles each one.
+You never download any of these by hand; `setup.sh` fetches only what your chosen languages need.
 
-| What | Size | From | Where it goes |
-|------|------|------|---------------|
-| Python packages (PyTorch, IndicF5 code, Chatterbox, …) | ~1-3 GB | PyPI, GitHub, pytorch.org | `.venv/` |
-| IndicF5 model weights (Bangla) | 1.3 GB | [rsolanki1822/IndicF5-mirror](https://huggingface.co/rsolanki1822/IndicF5-mirror) | `models/indicf5-base/` |
-| Vocos vocoder (Bangla) | 50 MB | [charactr/vocos-mel-24khz](https://huggingface.co/charactr/vocos-mel-24khz) | `~/.cache/huggingface/` |
-| Chatterbox Turbo (English) | ~4 GB | [ResembleAI/chatterbox-turbo](https://huggingface.co/ResembleAI/chatterbox-turbo) | `~/.cache/huggingface/` |
-| Bengali Whisper (optional) | 3 GB | [bengaliAI/tugstugi_bengaliai-asr_whisper-medium](https://huggingface.co/bengaliAI/tugstugi_bengaliai-asr_whisper-medium) | `~/.cache/huggingface/` |
-| Whisper small (optional, English) | 1 GB | [openai/whisper-small](https://huggingface.co/openai/whisper-small) | `~/.cache/huggingface/` |
-| Kalpurush font (only if missing) | 300 KB | [omicronlab.com](https://www.omicronlab.com/bangla-fonts.html) | `~/Library/Fonts` (macOS), `~/.local/share/fonts` (Linux) |
+| What | Needed for | Size | From | Where it goes |
+|------|------------|------|------|---------------|
+| Shared Python packages (PyTorch, transformers, …) | both | ~1-3 GB | PyPI, pytorch.org | `.venv/` |
+| IndicF5 code + its packages | Bangla | ~0.3 GB | GitHub, PyPI | `.venv/` |
+| IndicF5 model weights | Bangla | 1.3 GB | [rsolanki1822/IndicF5-mirror](https://huggingface.co/rsolanki1822/IndicF5-mirror) | `models/indicf5-base/` |
+| Vocos vocoder | Bangla | 50 MB | [charactr/vocos-mel-24khz](https://huggingface.co/charactr/vocos-mel-24khz) | `~/.cache/huggingface/` |
+| Kalpurush font (only if missing) | Bangla | 300 KB | [omicronlab.com](https://www.omicronlab.com/bangla-fonts.html) | `~/Library/Fonts` (macOS), `~/.local/share/fonts` (Linux) |
+| Bengali Whisper (optional) | Bangla | 3 GB | [bengaliAI/tugstugi_bengaliai-asr_whisper-medium](https://huggingface.co/bengaliAI/tugstugi_bengaliai-asr_whisper-medium) | `~/.cache/huggingface/` |
+| Chatterbox code + its packages | English | ~0.2 GB | PyPI | `.venv/` |
+| Chatterbox Turbo model | English | ~4 GB | [ResembleAI/chatterbox-turbo](https://huggingface.co/ResembleAI/chatterbox-turbo) | `~/.cache/huggingface/` |
+| Whisper small (optional) | English | 1 GB | [openai/whisper-small](https://huggingface.co/openai/whisper-small) | `~/.cache/huggingface/` |
 
 The Whisper models are optional helpers. They draft the transcript when you make a voice, and they check each narrated phrase when a project sets `"retakes"`.
 
@@ -91,9 +130,10 @@ Options, set before `./setup.sh`:
 
 | Variable | Effect |
 |----------|--------|
+| `LANGUAGES=bn` / `en` / `bn,en` | which language engines to install (default `bn,en`). Running again with another language adds it |
 | `TORCH_CPU=1` | CPU-only PyTorch (Linux) |
-| `WITH_EN=0` | Bangla only: skip the English engine (saves ~4 GB) |
-| `WITH_ASR=0` | skip the Whisper models |
+| `TORCH_CUDA=cu126` | PyTorch built for CUDA 12.6 instead of 13 (Linux, NVIDIA driver older than 580). Any build listed at https://download.pytorch.org/whl/ works, e.g. `cu130` |
+| `WITH_ASR=0` | skip the Whisper models (saves 3 GB for Bangla, 1 GB for English) |
 | `INDICF5_REPO=ai4bharat/IndicF5` | use the official model instead of the mirror. It's gated: first accept its terms on [the model page](https://huggingface.co/ai4bharat/IndicF5), then run `.venv/bin/hf auth login` |
 | `PYTHON=/path/to/python3.12` | use a specific Python 3.12 |
 
@@ -104,9 +144,11 @@ Optional, downloaded by hand only if you need them:
 
 ### 4. Test it
 
+Setup prints the test commands for the languages you installed:
+
 ```bash
-.venv/bin/python -m studio.speak voices/speaker-00737 "আসসালামু আলাইকুম।" test-bn.wav
-.venv/bin/python -m studio.speak builtin "Welcome to the demo." test-en.wav --language en
+.venv/bin/python -m studio.speak voices/speaker-00737 "আসসালামু আলাইকুম।" test-bn.wav            # Bangla
+.venv/bin/python -m studio.speak builtin "Welcome to the demo." test-en.wav --language en      # English
 ```
 
 The first run loads the model, which takes about 30 s. After that, a sentence takes about 5-10 s on Apple Silicon or a GPU, and 20-60 s on a CPU.
@@ -158,13 +200,14 @@ Then fill in the project:
 ## Repo layout
 
 ```
-studio/         the pipeline: tts, narrate, cards, build, speak, make_voice, config
+studio/         the pipeline: tts, narrate, cards, build, speak, make_voice, device, config
 tools/          pick_stock_speaker.py: choose a voice from an open speech corpus
 voices/         one folder per voice: reference.wav (+ reference.txt for Bangla) + README.txt
 projects/       one folder per video; _template/ (Bangla) and _template-en/ (English) are the starters
-docs/           GUIDE.md (full workflow), MODELS.md (models, links, licences)
+examples/       the README demo projects (English and Bangla), complete and rebuildable
+docs/           GUIDE.md (full workflow), MODELS.md (models, links, licences), media/ (demo videos)
 claude-skill/   optional Claude Code skill that drives this workflow
-setup.sh, requirements.txt, requirements-en.txt
+setup.sh, requirements.txt (shared), requirements-bn.txt (Bangla), requirements-en.txt (English)
 ```
 
 ## Not in the repo

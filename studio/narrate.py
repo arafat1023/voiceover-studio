@@ -25,6 +25,7 @@ project.json keys used (all optional):
 import argparse
 import json
 import re
+import unicodedata
 
 import numpy as np
 import soundfile as sf
@@ -85,17 +86,28 @@ def for_voice(project: Project, text: str) -> str:
 
 
 def _words(text: str) -> list[str]:
-    # Digits are dropped: recognisers write "10" for "ten", which is not a mistake in the take.
-    return [w for w in re.sub(r'[^\wঀ-৿]+', ' ', text.lower()).split() if not re.search(r'[0-9০-৯]', w)]
+    # NFC first: Bangla letters like য় can be one code point or two (য + nukta), and the script and
+    # the recogniser often store the same word in different forms.
+    text = unicodedata.normalize('NFC', text).lower()
+    return re.sub(r'[^\wঀ-৿]+', ' ', text).split()
+
+
+def _same(expected: str, heard: str) -> bool:
+    # A number in digits matches any one word: recognisers write "10" for "ten", which is not a
+    # mistake in the take.
+    return expected == heard or bool(re.fullmatch(r'[0-9০-৯]+', heard) or re.fullmatch(r'[0-9০-৯]+', expected))
 
 
 def word_error(expected: str, heard: str) -> float:
     ref, hyp = _words(expected), _words(heard)
+    if ''.join(ref) == ''.join(hyp):  # only the spacing differs, e.g. "ভয়েসওভার" heard as "ভয়েস ওভার"
+        return 0.0
     row = list(range(len(hyp) + 1))
     for i in range(1, len(ref) + 1):
         diagonal, row[0] = row[0], i
         for j in range(1, len(hyp) + 1):
-            diagonal, row[j] = row[j], min(row[j] + 1, row[j - 1] + 1, diagonal + (ref[i - 1] != hyp[j - 1]))
+            cost = 0 if _same(ref[i - 1], hyp[j - 1]) else 1
+            diagonal, row[j] = row[j], min(row[j] + 1, row[j - 1] + 1, diagonal + cost)
     return row[len(hyp)] / max(len(ref), 1)
 
 

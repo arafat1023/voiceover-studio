@@ -1,11 +1,11 @@
+# Shared by both languages (setup.sh adds requirements-bn.txt and/or requirements-en.txt).
 # Python 3.12. Every package is pinned to its newest release that works with the rest; the ones held
-# back are held back by numpy (IndicF5 requires numpy <= 1.26.4, and numpy 1.26 has no wheels for
-# Python 3.13+, which is also why Python stays at 3.12).
-f5_tts @ git+https://github.com/ai4bharat/IndicF5.git@13f7c4d627cc10111aea8fe9c0039462cacacdc7
+# back are held back by numpy: IndicF5 (Bangla) requires numpy <= 1.26.4, Chatterbox (English)
+# requires numpy < 2 on Python 3.12, and numpy 1.26 has no wheels for Python 3.13+, which is also
+# why Python stays at 3.12.
 torch==2.14.1
 torchaudio==2.11.0
 torchcodec==0.17.0
-vocos==0.1.0
 transformers==5.19.0
 accelerate==1.15.0
 safetensors==0.8.0
@@ -17,7 +17,3 @@ numpy==1.26.4
 # Newest releases that still support numpy 1.26 (librosa 1.0 and scipy 1.18 need numpy 2).
 librosa==0.11.0
 scipy==1.17.1
-# Pulled in by IndicF5 (via datasets); 26.0 needs numpy 2 at runtime without declaring it.
-pyarrow==25.0.1
-# 2.4 breaks hydra-core, which IndicF5 uses.
-omegaconf==2.3.1

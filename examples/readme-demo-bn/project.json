@@ -1,0 +1,18 @@
+{
+  "name": "README demo (Bangla)",
+  "language": "bn",
+  "voice": "voices/speaker-00737",
+  "speed": 0.9,
+  "retakes": 2,
+  "credit": "Voice based on Google SLR37 Bengali speech data, CC BY-SA 4.0",
+  "cards": {
+    "title": {
+      "heading": "voiceover-studio",
+      "subtitle": "ক্লোন করা কণ্ঠে ন্যারেশনসহ ডেমো ভিডিও, আপনার নিজের কম্পিউটারে"
+    },
+    "closing": {
+      "heading": "বিনামূল্যে, ওপেন সোর্স",
+      "subtitle": "github.com/arafat1023/voiceover-studio"
+    }
+  }
+}

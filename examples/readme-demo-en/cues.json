@@ -1,0 +1,77 @@
+{
+  "1": [
+    {
+      "at": null,
+      "shot": "card/title"
+    }
+  ],
+  "2": [
+    {
+      "at": null,
+      "shot": "scene-02"
+    },
+    {
+      "at": "only the narration paragraph",
+      "box": [
+        136,
+        292,
+        1560,
+        108
+      ]
+    }
+  ],
+  "3": [
+    {
+      "at": null,
+      "shot": "scene-03"
+    },
+    {
+      "at": "tied to a word",
+      "box": [
+        136,
+        242,
+        1560,
+        108
+      ]
+    }
+  ],
+  "4": [
+    {
+      "at": null,
+      "shot": "scene-04"
+    },
+    {
+      "at": "three commands",
+      "box": [
+        136,
+        142,
+        1560,
+        358
+      ]
+    },
+    {
+      "at": "phrase by phrase",
+      "box": [
+        136,
+        142,
+        1560,
+        158
+      ]
+    },
+    {
+      "at": "captions and highlights",
+      "box": [
+        136,
+        292,
+        1560,
+        208
+      ]
+    }
+  ],
+  "5": [
+    {
+      "at": null,
+      "shot": "card/closing"
+    }
+  ]
+}

@@ -20,3 +20,10 @@ projects/*
 !projects/_template/
 !projects/_template-en/
 *.mp4
+# The README demo media is the one exception.
+!docs/media/*.mp4
+
+# Example projects: their sources are tracked, their generated output is not.
+examples/*/narration/
+examples/*/cards/
+examples/*/work/

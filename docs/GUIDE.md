@@ -32,9 +32,11 @@ Any voice can speak either language. Where the rules differ, this guide says so.
 
 ## 1. Setup (once)
 
-Follow **Install** in the [README](../README.md#install). It lists the system tools for macOS and Linux, everything `setup.sh` downloads, and the optional manual downloads. Model sources and licences are in [MODELS.md](MODELS.md).
+Follow **Install** in the [README](../README.md#install). It lists the system tools for macOS and Linux, everything `setup.sh` downloads, and the optional manual downloads.
 
-The device is picked automatically: `mps` on Apple Silicon, `cuda` with an NVIDIA GPU, otherwise `cpu`. Check that everything works:
+Install only the languages you need: `./setup.sh` (Bangla and English), `LANGUAGES=bn ./setup.sh` (Bangla only) or `LANGUAGES=en ./setup.sh` (English only). To add a language later, run setup again with it; what's installed is kept. The commands below assume the matching language is installed. Model sources and licences are in [MODELS.md](MODELS.md).
+
+The device is picked automatically: `mps` on Apple Silicon, `cuda` with an NVIDIA GPU, otherwise `cpu`. `.venv/bin/python -m studio.device` shows which one, and why an NVIDIA GPU isn't being used. Check that everything works:
 
 ```bash
 .venv/bin/python -m studio.speak voices/speaker-00737 "আসসালামু আলাইকুম।" test-bn.wav
@@ -356,13 +358,14 @@ All keys are optional except where noted.
 | `Google Chrome is needed to render the cards` | install Chrome or Chromium (`setup.sh` prints the command) |
 | Mumbling, skipped words, wrong accent (Bangla) | `reference.txt` doesn't match `reference.wav`; fix it word for word, or choose a cleaner span |
 | `… must be longer than 5 s for the English engine` | the voice's `reference.wav` is too short for Chatterbox; cut a longer span with `make_voice` |
-| `No module named 'chatterbox'` | the English engine isn't installed; run `./setup.sh` without `WITH_EN=0` |
+| `The English engine is not installed` / `The Bangla engine is not installed` | that language wasn't chosen at setup; run the command in the message (`LANGUAGES=en ./setup.sh` or `LANGUAGES=bn ./setup.sh`). It adds the language and keeps the rest |
 | `.venv was made with another Python version` | `rm -rf .venv` and run `./setup.sh` again (the project needs Python 3.12) |
 | English garbles a word or skips one | set `"retakes": 2`; respell names in `voice_spellings` (e.g. `"bKash": "bee-cash"`) |
 | One word always wrong | respell it in `voice_spellings` (hyphenate, or write it how it sounds) |
 | Voice too fast or flat | lower `speed`; use a calmer reference clip; add `slow_scenes` or `comma_scenes` |
 | A highlight is offset | the box was measured on a different-size screenshot; re-measure on the shot you're using |
 | Slow on Linux | no GPU means CPU inference; use `--only` while iterating, and do the full narration once at the end |
+| Linux has an NVIDIA GPU but it's still slow | run `.venv/bin/python -m studio.device`: it says whether PyTorch sees the GPU and, if not, why (CPU-only build, or a driver older than 580: use `TORCH_CUDA=cu126`) |
 
 ## Layout
 
@@ -373,6 +376,7 @@ studio/         the pipeline
   cards.py        project.json -> cards/ (title, closing, extra, process map, insets)
   build.py        narration + shots + cards + cues -> video
   speak.py        one line, for testing a voice or a word
+  device.py       which device (mps / cuda / cpu) the models run on, and why not the GPU
   make_voice.py   recording -> voices/<name>/
   config.py       project folder + project.json loader
 tools/          pick_stock_speaker.py

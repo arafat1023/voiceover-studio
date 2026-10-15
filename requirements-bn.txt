@@ -1,0 +1,9 @@
+# Bangla engine: IndicF5 (AI4Bharat, MIT) + the Vocos vocoder. setup.sh installs this when
+# LANGUAGES includes bn (the default). Versions shared with English are in requirements.txt.
+f5_tts @ git+https://github.com/ai4bharat/IndicF5.git@13f7c4d627cc10111aea8fe9c0039462cacacdc7
+vocos==0.1.0
+# Pulled in by IndicF5 (via datasets); 26.0 needs numpy 2 at runtime without declaring it.
+pyarrow==25.0.1
+# 2.4 breaks hydra-core, which IndicF5 uses.
+omegaconf==2.3.1
+numpy==1.26.4
