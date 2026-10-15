@@ -54,6 +54,17 @@ class Project:
         return self.root / 'work'
 
     @property
+    def language(self) -> str:
+        """'bn' (Bangla, IndicF5) or 'en' (English, Chatterbox)."""
+        return self.get('language', 'bn')
+
+    @property
+    def font(self) -> str:
+        """Default font for captions and cards: Kalpurush shapes Bangla well; Arial exists on macOS
+        and is aliased by fontconfig on Linux (Liberation Sans / DejaVu Sans)."""
+        return 'Kalpurush' if self.language == 'bn' else 'Arial'
+
+    @property
     def voice(self) -> Path:
         voice = Path(self.get('voice', 'voices/speaker-00737'))
         return voice if voice.is_absolute() else STUDIO_ROOT / voice

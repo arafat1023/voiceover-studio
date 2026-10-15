@@ -1,0 +1,17 @@
+{
+  "name": "My product demo (English)",
+  "language": "en",
+  "voice": "builtin",
+  "speed": 0.92,
+  "retakes": 2,
+  "voice_spellings": {
+    "CSV": "C-S-V",
+    "PDF": "P-D-F"
+  },
+  "cards": {
+    "logo": "assets/logo.png",
+    "title": { "heading": "Product name", "subtitle": "What this video shows, in one line" },
+    "closing": { "heading": "Closing line", "subtitle": "Thank you" }
+  },
+  "output": "~/Desktop/My-Demo-EN.mp4"
+}

@@ -22,7 +22,13 @@ The whole cycle, in order:
 
 At the end are a [project.json reference](#projectjson-reference), [troubleshooting](#troubleshooting) and the [repo layout](#layout).
 
-`projects/_template` is a complete three-scene example: add two screenshots and a logo and it builds.
+`projects/_template` (Bangla) and `projects/_template-en` (English) are complete three-scene examples: add two screenshots and a logo and they build.
+
+**Language.** Set `"language": "bn"` (the default) or `"en"` in project.json:
+- **Bangla** uses IndicF5, which needs a reference clip **and** its exact transcript.
+- **English** uses Chatterbox Turbo, which needs only a clip longer than 5 s, or the voice name `builtin` for the model's own voice.
+
+Any voice can speak either language. Where the rules differ, this guide says so.
 
 ## 1. Setup (once)
 
@@ -31,7 +37,8 @@ Follow **Install** in the [README](../README.md#install). It lists the system to
 The device is picked automatically: `mps` on Apple Silicon, `cuda` with an NVIDIA GPU, otherwise `cpu`. Check that everything works:
 
 ```bash
-.venv/bin/python -m studio.speak voices/speaker-00737 "আসসালামু আলাইকুম।" test.wav
+.venv/bin/python -m studio.speak voices/speaker-00737 "আসসালামু আলাইকুম।" test-bn.wav
+.venv/bin/python -m studio.speak builtin "Welcome to the demo." test-en.wav --language en
 ```
 
 ## 2. Make a voice (once per voice)
@@ -40,7 +47,7 @@ A voice is just a folder under `voices/`. Nothing is trained; every line imitate
 
 ```
 voices/<name>/reference.wav   8-12 s of clean speech, 24 kHz mono
-voices/<name>/reference.txt   exactly what that clip says
+voices/<name>/reference.txt   exactly what that clip says (Bangla only; English ignores it)
 voices/<name>/README.txt      who it is, where it came from, consent / licence
 ```
 
@@ -62,13 +69,13 @@ To choose the span:
 - Start and end in a pause.
 - Choose the calmest, most evenly paced part. The clone copies the clip's pace and mood.
 
-The draft transcripts come from Bengali Whisper, which `setup.sh` downloads unless you set `WITH_ASR=0`. Without it, step 1 still lists the segments; you just type the text yourself.
+The draft transcripts come from Bengali Whisper, or from English Whisper if you add `--language en` to both commands. `setup.sh` downloads both unless you set `WITH_ASR=0`. Without them, step 1 still lists the segments; you just type the text yourself.
 
-**Then fix `reference.txt` by hand** so it matches the audio word for word:
+**For Bangla, fix `reference.txt` by hand** so it matches the audio word for word. English skips this step, because Chatterbox doesn't use the transcript.
 - Write English words in Bangla script as they are spoken (ম্যানেজমেন্ট).
 - Write numbers in words.
 
-A wrong transcript is the most common cause of a bad clone: you get mumbles, skipped words or the wrong accent.
+A wrong transcript is the most common cause of a bad Bangla clone: you get mumbles, skipped words or the wrong accent.
 
 Test it:
 
@@ -77,11 +84,17 @@ Test it:
 .venv/bin/python -m studio.speak voices/alice "আসসালামু আলাইকুম।" test.wav --speed 0.85 --seconds 1.8
 ```
 
+For English, add `--language en`:
+
+```bash
+.venv/bin/python -m studio.speak voices/alice "Welcome to the demo." test.wav --language en
+```
+
 If it sounds off, try a different span. `--speed` below 1 is slower. `--seconds` forces the clip length, which helps short phrases the model rushes.
 
 ### No real person's voice?
 
-Use `voices/speaker-00737`, which ships with the repo. Or pick another speaker from the open SLR37 corpus (Bangladeshi Bangla, CC BY-SA 4.0):
+For English, use `"voice": "builtin"`, the Chatterbox model's own voice (MIT). For Bangla, use `voices/speaker-00737`, which ships with the repo. Or pick another speaker from the open SLR37 corpus (Bangladeshi Bangla, CC BY-SA 4.0):
 
 ```bash
 curl -LO https://www.openslr.org/resources/37/bn_bd.zip          # 560 MB
@@ -103,7 +116,8 @@ Aim for 8-12 s in total. A corpus voice needs its credit line: set `"credit"` in
 ## 3. Start a project
 
 ```bash
-cp -r projects/_template projects/my-demo
+cp -r projects/_template    projects/my-demo     # Bangla
+cp -r projects/_template-en projects/my-demo     # English
 ```
 
 | File | What it is |
@@ -132,16 +146,16 @@ Only the paragraph right after `**Narration:**` is spoken. It ends at the first 
 Writing rules:
 
 - **One scene, one screen.** Show the process: what the user does, step by step, and where the result appears. If a result lands on another page, show it as an [inset](#insets) rather than cutting away.
-- **Numbers in words.** Write চার হাজার টাকা, not ৪,০০০ টাকা. The narrator refuses digits, so the mistake shows up before any audio is generated.
+- **Numbers in words (Bangla).** Write চার হাজার টাকা, not ৪,০০০ টাকা. In a Bangla project the narrator refuses digits, so the mistake shows up before any audio is generated. English reads digits, but words are still safer for prices and dates ("four thousand taka").
 - **Abbreviations.** Write them normally (সিএসভি). Add `"voice_spellings": {"সিএসভি": "সি-এস-ভি"}` so the voice spells them out, while captions keep the normal spelling. The same trick fixes any word the voice gets wrong: map it to a spelling that sounds right.
-- **Sentences** end with `।` `?` `!` (a `:` also splits). Each one is spoken separately, which is what keeps captions and highlights in sync. Keep sentences short.
+- **Sentences** end with `।` `?` `!` in Bangla, or `.` `?` `!` in English; a `:` also splits. Each one is spoken separately, which is what keeps captions and highlights in sync. Keep sentences short. In English, avoid abbreviations with a dot inside a sentence ("e.g.", "Dr."), because the dot splits it.
 
 Pacing controls, all in project.json:
 
 | Problem | Fix |
 |---------|-----|
 | a short phrase is rushed | `"fixed_seconds": {"আসসালামু আলাইকুম।": 1.8}` |
-| a list is read too fast | add the scene number to `"comma_scenes"`: it pauses after each comma, এবং or আর |
+| a list is read too fast | add the scene number to `"comma_scenes"`: it pauses after each comma, and before এবং / আর (Bangla) or "and" / "or" (English) |
 | a dense scene | add it to `"slow_scenes"` for longer pauses between sentences |
 | a dramatic pause | `"pause_before": {"1": "অনেকটাই স্বয়ংক্রিয়"}`: in scene 1, pause before those words |
 | everything too fast or slow | `"speed"` (0.85 is calmer, 1.0 is the model's natural pace) |
@@ -164,6 +178,8 @@ This writes:
 Timing: about 10-20 s per scene on Apple Silicon or a GPU. On a CPU it's several times slower, so use `--only` while iterating.
 
 Listen to every clip. Any phrase can come out odd: a garbled word, a strange stress or a cut-off ending. Every run is a fresh take, so re-run that scene. If one word keeps failing, change its spelling in `voice_spellings`.
+
+**Automatic retakes.** Set `"retakes": 2` in project.json. Whisper then transcribes every phrase as it's generated. If more than 1 word in 10 differs from the script, the phrase is regenerated, up to 2 more times, and the closest take is kept. A phrase that is still off gets a "(best take still differs: …)" line in the output, so you know what to listen to. Digits in the transcript are ignored, so "10" for "ten" doesn't count as an error. This roughly doubles narration time, and it needs the Whisper models (`WITH_ASR=1`, the default). The English template has it on.
 
 ## 6. Capture the screenshots
 
@@ -307,7 +323,8 @@ All keys are optional except where noted.
 | Key | Default | Meaning |
 |-----|---------|---------|
 | `name` | | label for you |
-| `voice` | `voices/speaker-00737` | voice folder (relative to the repo root, or absolute) |
+| `language` | `bn` | `bn` (Bangla, IndicF5) or `en` (English, Chatterbox); also picks the default font, sentence ends and list words |
+| `voice` | `voices/speaker-00737` | voice folder (relative to the repo root, or absolute); `builtin` = the English model's own voice |
 | `speed` | `0.9` | below 1 is slower |
 | `voice_spellings` | `{}` | `{"as written": "as spoken"}`: the voice reads the right side, captions keep the left |
 | `fixed_seconds` | `{}` | `{"exact phrase।": 1.8}`: force a phrase's length |
@@ -315,11 +332,12 @@ All keys are optional except where noted.
 | `sentence_gap` / `colon_gap` | `0.32` / `0.18` | silence after a sentence / after a `:` |
 | `comma_scenes` / `comma_gap` | `[]` / `0.8` | scenes read item by item, and the pause after each item |
 | `slow_scenes` / `slow_gap` | `[]` / `1.0` | scenes with longer pauses between sentences |
-| `require_word_numbers` | `true` | refuse digits in the narration |
+| `require_word_numbers` | `true` for bn, `false` for en | refuse digits in the narration |
+| `retakes` | `0` | extra takes per phrase when Whisper hears different words ([narrate](#5-narrate)) |
 | `cards` | | `logo`, `font`, `colors`, `title`, `closing`, `extra`, `process_map` ([cards](#8-cards-process-maps-and-insets)) |
 | `insets` | `{}` | `{"scene": {"image": ..., "label": ...}}` ([insets](#insets)) |
 | `credit` | | small line at the top of the closing card |
-| `video` | | `fps` 30; `lead` 0.5 / `tail` 0.9 (silence before/after each scene); `last_hold` 1.5; `caption_font` "Kalpurush"; `caption_size` 50; `caption_max` 68 (characters per line); `bar` "0x0b2038" (caption bar colour); `highlight` "255,106,48" (box colour, RGB) |
+| `video` | | `fps` 30; `lead` 0.5 / `tail` 0.9 (silence before/after each scene); `last_hold` 1.5; `caption_font` "Kalpurush" (bn) / "Arial" (en); `caption_size` 50; `caption_max` 68 (characters per line); `bar` "0x0b2038" (caption bar colour); `highlight` "255,106,48" (box colour, RGB) |
 | `output` | `<project>/video.mp4` | where the full build goes; `~` works |
 | `pitch` / `cues` | `pitch.md` / `cues.json` | other file names, e.g. to keep two cuts in one project |
 
@@ -336,7 +354,11 @@ All keys are optional except where noted.
 | Captions show boxes or the wrong font | Kalpurush isn't installed; re-run `./setup.sh` or set `video.caption_font` / `cards.font` |
 | `No such filter: 'ass'` | your ffmpeg lacks libass; install Homebrew's or your distro's ffmpeg |
 | `Google Chrome is needed to render the cards` | install Chrome or Chromium (`setup.sh` prints the command) |
-| Mumbling, skipped words, wrong accent | `reference.txt` doesn't match `reference.wav`; fix it word for word, or choose a cleaner span |
+| Mumbling, skipped words, wrong accent (Bangla) | `reference.txt` doesn't match `reference.wav`; fix it word for word, or choose a cleaner span |
+| `… must be longer than 5 s for the English engine` | the voice's `reference.wav` is too short for Chatterbox; cut a longer span with `make_voice` |
+| `No module named 'chatterbox'` | the English engine isn't installed; run `./setup.sh` without `WITH_EN=0` |
+| `.venv was made with another Python version` | `rm -rf .venv` and run `./setup.sh` again (the project needs Python 3.12) |
+| English garbles a word or skips one | set `"retakes": 2`; respell names in `voice_spellings` (e.g. `"bKash": "bee-cash"`) |
 | One word always wrong | respell it in `voice_spellings` (hyphenate, or write it how it sounds) |
 | Voice too fast or flat | lower `speed`; use a calmer reference clip; add `slow_scenes` or `comma_scenes` |
 | A highlight is offset | the box was measured on a different-size screenshot; re-measure on the shot you're using |
@@ -346,7 +368,7 @@ All keys are optional except where noted.
 
 ```
 studio/         the pipeline
-  tts.py          loads IndicF5 + a voice; Voice.speak()
+  tts.py          the two engines (IndicF5 for bn, Chatterbox for en) + a voice; Voice.speak()
   narrate.py      pitch.md -> narration/ (wavs, timings, captions)
   cards.py        project.json -> cards/ (title, closing, extra, process map, insets)
   build.py        narration + shots + cards + cues -> video
@@ -355,7 +377,7 @@ studio/         the pipeline
   config.py       project folder + project.json loader
 tools/          pick_stock_speaker.py
 voices/         one folder per voice (audio git-ignored, except the bundled speaker-00737)
-projects/       one folder per video; _template/ to copy (others git-ignored)
+projects/       one folder per video; _template/ (bn) and _template-en/ (en) to copy (others git-ignored)
 docs/           this guide and MODELS.md (models, links, licences)
 claude-skill/   the Claude Code skill
 models/ .venv/  created by setup.sh (git-ignored)

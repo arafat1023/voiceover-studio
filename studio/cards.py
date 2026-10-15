@@ -4,7 +4,7 @@ is shaped correctly (ordinary image libraries break Bangla conjuncts).
     .venv/bin/python -m studio.cards projects/<name>
 
 project.json "cards" (all optional):
-    "font": "Kalpurush", "logo": "assets/logo.png",
+    "font": "Kalpurush" (Bangla) / "Arial" (English), "logo": "assets/logo.png",
     "colors": {"bg1": "#1f4a73", "bg2": "#12304f", "bg3": "#0b2038", "accent": "#e2483d", "muted": "#cfe0f1"},
     "title":   {"heading": "...", "subtitle": "..."}          -> cards/title.png
     "closing": {"heading": "...", "subtitle": "ধন্যবাদ"}       -> cards/closing.png
@@ -40,10 +40,10 @@ def base_css(project: Project) -> str:
     cards = project.get('cards', {})
     c = {'bg1': '#1f4a73', 'bg2': '#12304f', 'bg3': '#0b2038', 'accent': '#e2483d', 'muted': '#cfe0f1',
          **cards.get('colors', {})}
-    font = cards.get('font', 'Kalpurush')
+    font = cards.get('font', project.font)
     return f'''
 html, body {{ margin: 0; width: 1920px; height: 1080px; overflow: hidden; }}
-body {{ font-family: '{font}', 'Bangla Sangam MN', 'Noto Sans Bengali', sans-serif; color: #fff;
+body {{ font-family: '{font}', 'Bangla Sangam MN', 'Noto Sans Bengali', 'Helvetica Neue', 'DejaVu Sans', sans-serif; color: #fff;
   background: radial-gradient(circle at 50% 35%, {c['bg1']} 0%, {c['bg2']} 55%, {c['bg3']} 100%); }}
 .center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }}
 .logo {{ background: #fff; border-radius: 28px; padding: 28px 40px; box-shadow: 0 18px 50px rgba(0,0,0,.35); }}
@@ -66,13 +66,14 @@ def card_html(project: Project, heading: str, subtitle: str = '', credit: str = 
     return f'<div class="center">{logo_html}<h1>{heading}</h1>{sub}</div>{foot}'
 
 
-def map_html(title: str, steps: list[str], lit: int) -> str:
+def map_html(title: str, steps: list[str], lit: int, language: str = 'bn') -> str:
     half = (len(steps) + 1) // 2
     boxes = []
     for index, label in enumerate(steps):
         state = 'on' if index < lit else 'off'
         current = ' now' if index == lit - 1 else ''
-        boxes.append(f'<div class="step {state}{current}"><span class="n">{str(index + 1).translate(BN_DIGITS)}</span>{label}</div>')
+        number = str(index + 1).translate(BN_DIGITS) if language == 'bn' else str(index + 1)
+        boxes.append(f'<div class="step {state}{current}"><span class="n">{number}</span>{label}</div>')
     row1 = '<div class="arrow">→</div>'.join(boxes[:half])
     row2 = '<div class="arrow">←</div>'.join(boxes[half:])
     return f'''<style>
@@ -125,7 +126,7 @@ def main() -> None:
     process_map = cards.get('process_map')
     if process_map:
         for lit in range(len(process_map['steps']) + 1):
-            render(project, map_html(process_map['title'], process_map['steps'], lit), project.cards / f'map-{lit:02d}.png')
+            render(project, map_html(process_map['title'], process_map['steps'], lit, project.language), project.cards / f'map-{lit:02d}.png')
     for scene, spec in project.get('insets', {}).items():
         render_inset(project, scene, spec)
     print('cards written to', project.cards)

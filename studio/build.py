@@ -16,7 +16,7 @@ matches its next occurrence. Boxes are in the pixels of that screenshot (any siz
 the previous one. Shots are shots/<name>.jpg (or .png).
 
 project.json "video" (all optional): fps 30, lead 0.5, tail 0.9, last_hold 1.5, caption_font
-"Kalpurush", caption_size 50, caption_max 68, bar "0x0b2038", highlight "255,106,48".
+(Kalpurush for Bangla, Arial for English), caption_size 50, caption_max 68, bar "0x0b2038", highlight "255,106,48".
 """
 import argparse
 import json
@@ -44,7 +44,7 @@ class Builder:
         self.fps = v.get('fps', 30)
         self.lead, self.tail, self.last_hold = v.get('lead', 0.5), v.get('tail', 0.9), v.get('last_hold', 1.5)
         self.bar = v.get('bar', '0x0b2038')
-        self.caption_font = v.get('caption_font', 'Kalpurush')
+        self.caption_font = v.get('caption_font', project.font)
         self.caption_size = v.get('caption_size', 50)
         self.caption_max = v.get('caption_max', 68)
         self.highlight = tuple(int(x) for x in v.get('highlight', '255,106,48').split(','))

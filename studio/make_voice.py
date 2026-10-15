@@ -2,13 +2,16 @@
 
     .venv/bin/python -m studio.make_voice <recording.m4a|wav> voices/<name>            # step 1: list segments
     .venv/bin/python -m studio.make_voice <recording> voices/<name> --start 3.9 --end 14.1   # step 2: cut
+    add --language en for an English recording (drafts the transcript with English Whisper)
 
-Step 1 finds the pauses and prints each speech segment with a draft Bangla transcript (Bengali
-Whisper, offline, if it is in the Hugging Face cache), so you can pick 8-12 seconds of clean speech
+Step 1 finds the pauses and prints each speech segment with a draft transcript (Whisper, offline,
+if the model is in the Hugging Face cache), so you can pick 8-12 seconds of clean speech
 that ends on a sentence boundary. Step 2 cuts that span to voices/<name>/reference.wav (24 kHz mono)
 and writes a draft reference.txt. EDIT reference.txt so it matches the audio word for word, with
 English words written in Bangla script as spoken (e.g. "ম্যানেজমেন্ট"). A wrong transcript is the
-most common cause of a poor clone. Then test with studio.speak.
+most common cause of a poor Bangla clone. (The English engine does not read reference.txt; it only
+needs reference.wav to be longer than 5 s.) Any voice can speak either language. Then test with
+studio.speak.
 """
 import argparse
 import os
@@ -19,7 +22,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-ASR_MODEL = 'bengaliAI/tugstugi_bengaliai-asr_whisper-medium'
+ASR_MODELS = {'bn': 'bengaliAI/tugstugi_bengaliai-asr_whisper-medium', 'en': 'openai/whisper-small'}
 
 
 def to_wav16(src: Path, dst: Path) -> None:
@@ -42,11 +45,11 @@ def segments(wav: Path, noise: str = '-30dB', min_pause: float = 0.18) -> list[t
     return spans
 
 
-def transcriber():
+def transcriber(language: str):
     try:
         os.environ.setdefault('HF_HUB_OFFLINE', '1')
         from transformers import pipeline
-        return pipeline('automatic-speech-recognition', model=ASR_MODEL, device='cpu')
+        return pipeline('automatic-speech-recognition', model=ASR_MODELS[language], device='cpu')
     except Exception as error:  # noqa: BLE001 - optional helper
         print(f'(no draft transcripts: {str(error)[:80]})')
         return None
@@ -58,13 +61,14 @@ def main() -> None:
     parser.add_argument('voice_dir')
     parser.add_argument('--start', type=float)
     parser.add_argument('--end', type=float)
+    parser.add_argument('--language', default='bn', choices=sorted(ASR_MODELS), help='language of the recording')
     args = parser.parse_args()
     src, voice = Path(args.recording), Path(args.voice_dir)
     voice.mkdir(parents=True, exist_ok=True)
     wav16 = voice / 'original-16k.wav'
     to_wav16(src, wav16)
     audio, rate = sf.read(str(wav16), dtype='float32')
-    asr = transcriber()
+    asr = transcriber(args.language)
 
     def draft(a: float, b: float) -> str:
         if not asr:

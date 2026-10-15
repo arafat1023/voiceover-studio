@@ -1,0 +1,14 @@
+# English engine: Chatterbox Turbo (Resemble AI, MIT). setup.sh installs this unless WITH_EN=0.
+# These are chatterbox-tts's runtime dependencies. chatterbox-tts==0.1.7 itself is installed by setup.sh
+# with --no-deps: its own pins (torch 2.6, transformers 5.2) clash with IndicF5's, and it runs fine on
+# the versions in requirements.txt.
+s3tokenizer==0.3.0
+diffusers==0.41.0
+resemble-perth==1.0.1
+conformer==0.3.2
+omegaconf==2.3.1
+pyloudnorm==0.2.0
+# perth (the watermarker) imports pkg_resources, which setuptools 81 removed.
+setuptools<81
+# IndicF5 needs numpy 1.x; pinned here too so this install can't upgrade it.
+numpy==1.26.4

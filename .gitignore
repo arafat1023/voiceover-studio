@@ -18,4 +18,5 @@ voices/user-voice/
 # Projects: client material and generated output. Only the template is tracked.
 projects/*
 !projects/_template/
+!projects/_template-en/
 *.mp4
