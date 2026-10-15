@@ -340,7 +340,7 @@ All keys are optional except where noted.
 | `insets` | `{}` | `{"scene": {"image": ..., "label": ...}}` ([insets](#insets)) |
 | `credit` | | small line at the top of the closing card |
 | `video` | | `fps` 30; `lead` 0.5 / `tail` 0.9 (silence before/after each scene); `last_hold` 1.5; `caption_font` "Kalpurush" (bn) / "Arial" (en); `caption_size` 50; `caption_max` 68 (characters per line); `bar` "0x0b2038" (caption bar colour); `highlight` "255,106,48" (box colour, RGB) |
-| `output` | `<project>/video.mp4` | where the full build goes; `~` works |
+| `output` | `<project>/video.mp4` | where the full build goes; `~` and absolute paths work, and a relative path is inside the project folder |
 | `pitch` / `cues` | `pitch.md` / `cues.json` | other file names, e.g. to keep two cuts in one project |
 
 ## Troubleshooting
@@ -383,17 +383,28 @@ tools/          pick_stock_speaker.py
 voices/         one folder per voice (audio git-ignored, except the bundled speaker-00737)
 projects/       one folder per video; _template/ (bn) and _template-en/ (en) to copy (others git-ignored)
 docs/           this guide and MODELS.md (models, links, licences)
-claude-skill/   the Claude Code skill
+.claude/skills/ the Claude Code skill (loaded automatically inside the repo)
 models/ .venv/  created by setup.sh (git-ignored)
 ```
 
 ## Using Claude Code
 
-Install the skill with `cp -r claude-skill/narrated-demo-video ~/.claude/skills/`. Then ask Claude for "a narrated demo video of …". It works through this guide:
+The skill in `.claude/skills/narrated-demo-video/` loads automatically when you run Claude Code inside the repo; to use it from other folders, copy it with `cp -r .claude/skills/narrated-demo-video ~/.claude/skills/`. Then ask Claude for "a narrated demo video of …". It works through this guide:
 
-1. drafts the pitch for your review
-2. narrates
-3. takes the screenshots through Claude in Chrome
-4. writes `cues.json`, measuring boxes from the screenshots
-5. checks preview frames
-6. builds the full video
+1. agrees the story, audience, length and language with you
+2. picks or makes a voice ([section 2](#2-make-a-voice-once-per-voice))
+3. drafts the pitch for your review ([section 4](#4-write-the-pitch-pitchmd))
+4. narrates, with `"retakes"` on ([section 5](#5-narrate))
+5. takes the screenshots through Claude in Chrome, or asks you for them ([section 6](#6-capture-the-screenshots))
+6. writes `cues.json`, measuring boxes from the screenshots ([section 7](#7-cues-and-highlight-boxes-cuesjson))
+7. renders the cards and a preview, and checks the preview frames ([sections 8-9](#8-cards-process-maps-and-insets))
+8. builds the full video and tells you what to listen for
+
+It can't hear the audio, so the voice, accent and pacing are yours to judge.
+
+You choose how involved to be:
+- **Guided** (the default): it stops for you at steps 1, 3 and 7.
+- **One-shot:** say "in one go" or "don't ask me", and it decides everything itself, recording each choice in `projects/<name>/DECISIONS.md` so you can change it and rebuild.
+- **Custom:** name the checkpoints you want, e.g. "just show me the script".
+
+In every mode it still asks before cloning a real person's voice, large downloads, logins, or when it needs screenshots it can't take.

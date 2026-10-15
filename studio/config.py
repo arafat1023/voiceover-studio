@@ -71,7 +71,10 @@ class Project:
 
     @property
     def output(self) -> Path:
-        return Path(self.get('output', str(self.root / 'video.mp4'))).expanduser()
+        """Where the full build goes: absolute or ~ paths as given, relative paths inside the project
+        folder (not the folder the command runs from)."""
+        output = Path(self.get('output', 'video.mp4')).expanduser()
+        return output if output.is_absolute() else self.root / output
 
     def asset(self, name: str) -> Path:
         path = Path(name)

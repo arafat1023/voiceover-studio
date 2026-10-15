@@ -206,7 +206,7 @@ voices/         one folder per voice: reference.wav (+ reference.txt for Bangla)
 projects/       one folder per video; _template/ (Bangla) and _template-en/ (English) are the starters
 examples/       the README demo projects (English and Bangla), complete and rebuildable
 docs/           GUIDE.md (full workflow), MODELS.md (models, links, licences), media/ (demo videos)
-claude-skill/   optional Claude Code skill that drives this workflow
+.claude/skills/ the Claude Code skill (loaded automatically inside the repo)
 setup.sh, requirements.txt (shared), requirements-bn.txt (Bangla), requirements-en.txt (English)
 ```
 
@@ -240,11 +240,39 @@ Every Python package is pinned to its newest release that works with the rest. A
 
 ## Using with Claude Code
 
+The repo includes a [Claude Code](https://claude.com/claude-code) skill, `narrated-demo-video`, that walks through the whole workflow for you.
+
+**Install.** Nothing to do if you work inside the repo: Claude Code loads skills from the repo's `.claude/skills/` folder automatically. To use it from any other folder too, copy it to your user skills:
+
 ```bash
-cp -r claude-skill/narrated-demo-video ~/.claude/skills/
+cp -r .claude/skills/narrated-demo-video ~/.claude/skills/
 ```
 
-Then ask Claude for "a narrated demo video of …". It follows the workflow: pitch, then voice, narration, screenshots, cues, preview and full build. It checks preview frames before the full build.
+**Use.** Ask for something like *"Make a narrated demo video, in Bangla, of how to add a course in our admin panel."* You choose how involved to be:
+
+| Mode | How to ask | What happens |
+|------|------------|--------------|
+| **Guided** (default) | just ask | Claude stops three times for you: to agree the story, to review the script, and to review a preview before the full build |
+| **One-shot** | add "in one go" or "don't ask me" | Claude decides everything (language, voice, length, wording) and doesn't wait. Each choice is written to `projects/<name>/DECISIONS.md` with how to change it |
+| **Custom** | name your checkpoints, e.g. "just show me the script first" | Claude stops only there |
+
+If your request doesn't say, Claude asks once at the start. Either way the steps are the same:
+
+1. agree the story, audience, length and language
+2. pick or make a voice
+3. write the script (`pitch.md`)
+4. narrate, with Whisper checking each phrase
+5. take the screenshots
+6. write `cues.json`, measuring the highlight boxes from the screenshots
+7. build the cards and a preview, and check the preview frames
+8. build the full video and say what to listen for
+
+If you run it from another folder, it finds the repo itself, or asks you where it is.
+
+**What you need, and its limits:**
+- **Screenshots** of a web app need the [Claude in Chrome](https://claude.ai/chrome) extension. Without it, Claude asks you for the screenshots and tells you which screens to capture.
+- **Claude can't hear audio.** It checks words with Whisper, but you judge the voice, accent and pacing.
+- **It always asks first, even in one-shot mode,** before cloning a real person's voice, large downloads (`setup.sh`, models), logging into a site, or when it needs screenshots it can't capture. It does everything else first, then asks these together.
 
 ## Licence
 
