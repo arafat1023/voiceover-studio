@@ -1,0 +1,17 @@
+{
+  "name": "voiceover-studio-promo",
+  "private": true,
+  "type": "module",
+  "description": "Motion-graphics promo reels: an HTML/GSAP scene page rendered frame by frame in headless Chrome and encoded with ffmpeg.",
+  "scripts": {
+    "init": "node init.mjs",
+    "render": "node render.mjs",
+    "stills": "node stills.mjs"
+  },
+  "dependencies": {
+    "@fontsource/anek-bangla": "5.3.0",
+    "@fontsource/hind-siliguri": "5.3.0",
+    "gsap": "3.12.5",
+    "playwright-core": "1.55.0"
+  }
+}

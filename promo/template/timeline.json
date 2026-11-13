@@ -1,0 +1,54 @@
+{
+  "total": 30.0,
+  "digits": "bangla",
+  "brand": {
+    "name": "My App",
+    "logo": "img/logo.svg",
+    "colors": { "bg1": "#16365A", "bg2": "#081424", "accent": "#C9A227", "accent2": "#E7C766", "card": "#FFFDF6", "cardInk": "#0D2137" }
+  },
+  "captionHighlights": ["My App", "এক ট্যাপে", "একসাথে"],
+  "scenes": [
+    {
+      "type": "hook", "start": 0.6, "dur": 4.0,
+      "text": "সারাদিন কত কিছুর হিসাব রাখি… কিন্তু আসল কাজটার?",
+      "cards": [
+        { "icon": "🚶", "label": "স্টেপ", "value": 8432 },
+        { "icon": "🔔", "label": "নোটিফিকেশন", "value": 99, "plus": true }
+      ],
+      "big": "আসল কাজ?", "bigAt": 2.9
+    },
+    {
+      "type": "text", "start": 5.3, "dur": 3.6,
+      "text": "নিয়মিত থাকাটাই সবচেয়ে কঠিন।",
+      "title": "নিয়মিত থাকাই কঠিন", "sub": "একা একা হিসাব রাখতে গিয়ে ভুলে যাই"
+    },
+    {
+      "type": "reveal", "start": 9.8, "dur": 2.4,
+      "text": "তাই নিয়ে এলাম My App।", "caption": false,
+      "tagline": "প্রতিদিন, একসাথে", "sub": "ছোট অভ্যাস, বড় পরিবর্তন"
+    },
+    {
+      "type": "feature", "start": 13.0, "dur": 5.2,
+      "text": "এক ট্যাপে গুনুন, আর প্রতিদিনের অগ্রগতি দেখুন।",
+      "title": "এক ট্যাপে", "sub": "লক্ষ্য ঠিক করুন, অগ্রগতি দেখুন",
+      "screen": "img/screen-1.jpg", "placeholder": "img/screen-1.jpg (1080 px wide, status bar cropped)",
+      "highlights": [ { "box": [60, 620, 960, 260], "at": 1.4, "hold": 1.8 } ],
+      "taps": [ { "xy": [540, 1200], "at": 2.2 }, { "xy": [540, 1200], "at": 2.9 } ],
+      "chips": [ { "text": "✓ লক্ষ্য পূরণ", "xy": [700, 1380], "at": 3.4 } ]
+    },
+    {
+      "type": "feature", "start": 18.8, "dur": 5.0,
+      "text": "বন্ধুদের নিয়ে একসাথে এগিয়ে যান।",
+      "title": "সবাই মিলে", "sub": "পরিবার আর বন্ধুদের সাথে",
+      "screens": [ { "src": "img/screen-2.jpg", "at": 0 }, { "src": "img/screen-3.jpg", "at": 2.4 } ],
+      "toast": { "text": "🤲 ফাতিমা আপনার সাথে যোগ দিয়েছেন", "at": 2.8 }
+    },
+    {
+      "type": "end", "start": 24.5, "dur": 3.4,
+      "text": "আজই ডাউনলোড করুন My App।", "caption": false,
+      "tagline": "প্রতিদিন, একসাথে", "sub": "ফিচার · ফিচার · ফিচার",
+      "features": [ { "icon": "📿", "label": "গণনা" }, { "icon": "👥", "label": "রুম" }, { "icon": "🔥", "label": "স্ট্রিক" } ],
+      "stores": ["play", "appstore"], "storeLabel": "ডাউনলোড করুন", "site": "example.com"
+    }
+  ]
+}

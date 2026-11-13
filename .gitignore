@@ -27,3 +27,6 @@ projects/*
 examples/*/narration/
 examples/*/cards/
 examples/*/work/
+
+# Promo pipeline dependencies
+promo/node_modules/

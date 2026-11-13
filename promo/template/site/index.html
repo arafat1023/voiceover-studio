@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>Promo reel</title>
+<!--
+  Generic 9:16 promo scene page (1080x1920 CSS px). Everything is driven by window.TIMELINE
+  (the project's timeline.json, injected by render.mjs / stills.mjs). Scene types:
+    hook, text, quote, reveal, feature, end   — see docs/PROMO.md for every field.
+  Contract for the renderer: window.ready (Promise), window.seek(t) (async), window.DURATION.
+  All motion is a pure function of t (a paused GSAP timeline + frame(t)), so any frame can be
+  rendered in any order and parts can render in parallel.
+-->
+<style>
+@font-face{font-family:Anek;src:url(fonts/anek-bangla-bengali-600-normal.woff2);font-weight:600;unicode-range:U+0980-09FF,U+200C-200D}
+@font-face{font-family:Anek;src:url(fonts/anek-bangla-bengali-700-normal.woff2);font-weight:700;unicode-range:U+0980-09FF,U+200C-200D}
+@font-face{font-family:Anek;src:url(fonts/anek-bangla-bengali-800-normal.woff2);font-weight:800;unicode-range:U+0980-09FF,U+200C-200D}
+@font-face{font-family:Anek;src:url(fonts/anek-bangla-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:Anek;src:url(fonts/anek-bangla-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:Anek;src:url(fonts/anek-bangla-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:Hind;src:url(fonts/hind-siliguri-bengali-500-normal.woff2);font-weight:500;unicode-range:U+0980-09FF,U+200C-200D}
+@font-face{font-family:Hind;src:url(fonts/hind-siliguri-bengali-600-normal.woff2);font-weight:600;unicode-range:U+0980-09FF,U+200C-200D}
+@font-face{font-family:Hind;src:url(fonts/hind-siliguri-bengali-700-normal.woff2);font-weight:700;unicode-range:U+0980-09FF,U+200C-200D}
+@font-face{font-family:Hind;src:url(fonts/hind-siliguri-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Hind;src:url(fonts/hind-siliguri-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:Hind;src:url(fonts/hind-siliguri-latin-700-normal.woff2);font-weight:700}
+:root{--bg1:#16365A;--bg2:#081424;--accent:#C9A227;--accent2:#E7C766;--ink:#EAF0F8;--mute:#93A6BF;--card:#FFFDF6;--cardInk:#0D2137}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg2)}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Hind,sans-serif;color:var(--ink);
+  background:radial-gradient(120% 80% at 50% 45%,var(--bg1) 0%,color-mix(in srgb,var(--bg1) 55%,var(--bg2)) 45%,var(--bg2) 100%)}
+#glow{position:absolute;left:50%;top:48%;width:1400px;height:1400px;margin:-700px 0 0 -700px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--accent) 18%,transparent) 0%,color-mix(in srgb,var(--accent) 5%,transparent) 35%,transparent 65%)}
+#dust{position:absolute;inset:0}
+.dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent2);box-shadow:0 0 12px var(--accent)}
+.scene{position:absolute;inset:0;opacity:0}
+.glass{background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.16);border-radius:36px;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+/* chrome */
+#logopill{position:absolute;right:56px;top:72px;display:flex;align-items:center;gap:10px;background:#fff;border-radius:26px;padding:8px 18px 8px 10px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:30}
+#logopill img{width:58px;height:58px;object-fit:contain}
+#logopill b{font:700 30px Anek;color:var(--cardInk)}
+#chap{position:absolute;left:64px;top:190px;width:920px;z-index:25;opacity:0}
+#chapNo{font-weight:600;font-size:28px;color:var(--accent2);letter-spacing:3px;display:flex;align-items:center;gap:14px}
+#chapNo:before{content:"";width:46px;height:2px;background:var(--accent2);display:block}
+#chapH{font:800 84px/1.08 Anek;margin-top:14px;color:#fff}
+#chapS{font-weight:500;font-size:34px;color:var(--mute);margin-top:12px}
+#cap{position:absolute;left:60px;right:60px;bottom:140px;display:flex;justify-content:center;z-index:28}
+#capT{background:rgba(6,14,26,.80);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:28px;padding:20px 32px;font-weight:700;font-size:42px;line-height:1.38;color:#fff;text-align:center;max-width:960px}
+#capT em{font-style:normal;color:var(--accent2)}
+/* hook / text / quote */
+.big{position:absolute;left:60px;right:60px;top:780px;text-align:center;font:800 170px/1.1 Anek;color:var(--accent2);text-shadow:0 0 60px color-mix(in srgb,var(--accent) 45%,transparent)}
+.stat{position:absolute;left:330px;width:420px;padding:30px 34px;display:flex;align-items:center;gap:24px}
+.stat .ic{width:86px;height:86px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:48px;background:rgba(255,255,255,.1)}
+.stat .lb{font:600 30px Hind;color:var(--mute)}
+.stat .vl{font:800 64px/1 Anek;color:#fff}
+.title{position:absolute;left:70px;right:70px;top:700px;text-align:center;font:800 96px/1.15 Anek;color:#fff}
+.sub{position:absolute;left:90px;right:90px;top:1000px;text-align:center;font:600 44px/1.45 Hind;color:var(--mute)}
+.quoteMain{position:absolute;left:60px;right:60px;top:640px;text-align:center;font-size:96px;line-height:1.8;color:var(--accent2);text-shadow:0 0 40px color-mix(in srgb,var(--accent) 35%,transparent)}
+.quoteMain span{display:inline-block;opacity:0}
+.quoteSub{position:absolute;left:60px;right:60px;top:1060px;text-align:center;font:700 50px/1.5 Hind;color:#fff}
+.quoteRef{position:absolute;left:0;right:0;top:1250px;text-align:center;font:600 32px Hind;color:var(--mute)}
+/* reveal */
+.noor{position:absolute;left:50%;top:44%;width:2000px;height:2000px;margin:-1000px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,251,238,.95) 0%,rgba(251,243,217,.75) 18%,color-mix(in srgb,var(--accent2) 30%,transparent) 38%,transparent 60%)}
+.revLogo{position:absolute;left:50%;top:44%;width:560px;height:560px;margin:-280px}
+.revLogo img{width:100%;height:100%;object-fit:contain}
+.revTag{position:absolute;left:0;right:0;top:1250px;text-align:center;font:800 58px Anek;color:var(--cardInk)}
+.revSub{position:absolute;left:0;right:0;top:1340px;text-align:center;font:600 36px Hind;color:#5B4A1E}
+/* feature */
+.phone{position:absolute;left:240px;top:520px;width:600px;height:1242px;border-radius:84px;background:#05090F;padding:20px;transform-origin:0 0;scale:.85;
+  box-shadow:0 60px 120px rgba(0,0,0,.55),0 0 0 3px #2A3A52 inset,0 0 80px color-mix(in srgb,var(--accent) 12%,transparent)}
+.phone .scr{position:relative;width:100%;height:100%;border-radius:66px;overflow:hidden;background:linear-gradient(160deg,#E9EEF5,#C9D4E3)}
+.phone .scr img.s{position:absolute;left:0;top:0;width:100%}
+.phone .isl{position:absolute;left:50%;top:12px;width:150px;height:34px;margin-left:-75px;border-radius:20px;background:#000;z-index:3}
+.phone .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 34px Hind;color:#5A6B82;text-align:center;padding:40px}
+.hl{position:absolute;border:4px solid var(--accent2);border-radius:22px;box-shadow:0 0 0 6px color-mix(in srgb,var(--accent2) 18%,transparent),0 0 30px color-mix(in srgb,var(--accent2) 45%,transparent);opacity:0;z-index:4}
+.tapdot{position:absolute;width:70px;height:70px;margin:-35px;border-radius:50%;background:rgba(255,255,255,.35);border:3px solid rgba(255,255,255,.9);opacity:0;z-index:5}
+.toast{position:absolute;left:130px;right:130px;top:1560px;padding:22px 30px;border-radius:28px;background:var(--card);color:var(--cardInk);font:700 34px Hind;box-shadow:0 30px 60px rgba(0,0,0,.4);display:flex;gap:14px;align-items:center;justify-content:center;opacity:0}
+.chip{position:absolute;padding:16px 28px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);border:1.5px solid color-mix(in srgb,var(--accent) 70%,transparent);font:700 32px Hind;color:var(--accent2);white-space:nowrap;opacity:0}
+/* end */
+.endCard{position:absolute;left:170px;right:170px;top:380px;height:820px;border-radius:56px;background:linear-gradient(170deg,var(--card),color-mix(in srgb,var(--card) 80%,var(--accent2)));box-shadow:0 50px 120px rgba(0,0,0,.5),0 0 120px color-mix(in srgb,var(--accent2) 25%,transparent)}
+.endCard img{position:absolute;left:50%;top:40px;width:480px;height:480px;margin-left:-240px;object-fit:contain}
+.endTag{position:absolute;left:0;right:0;top:590px;text-align:center;font:800 54px Anek;color:var(--cardInk)}
+.endSub{position:absolute;left:0;right:0;top:675px;text-align:center;font:600 32px Hind;color:#6B5A2B}
+.feats{position:absolute;left:0;right:0;top:1250px;display:flex;justify-content:center;gap:24px}
+.feat{width:150px;text-align:center;font:600 26px Hind;color:var(--mute)}
+.feat .i{width:96px;height:96px;margin:0 auto 12px;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:46px}
+.stores{position:absolute;left:0;right:0;top:1450px;display:flex;justify-content:center;gap:36px}
+.store{height:110px;border-radius:24px;background:#000;border:2px solid #3A4A60;display:flex;align-items:center;gap:16px;padding:0 30px;color:#fff}
+.store small{display:block;font:500 22px Hind;color:#C9D3E0}
+.store b{display:block;font:700 38px Hind;line-height:1}
+.store svg{width:52px;height:52px}
+.site{position:absolute;left:0;right:0;top:1595px;text-align:center;font:600 32px Hind;color:var(--accent2);letter-spacing:2px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="glow"></div>
+  <div id="dust"></div>
+  <div id="scenes"></div>
+  <div id="chap"><div id="chapNo"></div><div id="chapH"></div><div id="chapS"></div></div>
+  <div id="logopill"><img id="pillLogo" alt=""><b id="pillName"></b></div>
+  <div id="cap"><div id="capT"></div></div>
+</div>
+<script src="gsap.min.js"></script>
+<script>
+const TL = window.TIMELINE;
+const B = TL.brand || {};
+const $ = id => document.getElementById(id);
+const el = (tag, cls, html, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; if (parent) parent.appendChild(e); return e; };
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const BN = TL.digits === 'latin' ? (n => String(n)) : (n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]));
+const num = n => BN(Math.round(n).toLocaleString('en-IN'));
+for (const [k, v] of Object.entries(B.colors || {})) document.documentElement.style.setProperty('--' + k, v);
+
+const tl = gsap.timeline({ paused: true });
+const scenes = TL.scenes;
+const S = i => scenes[i].start, END = i => scenes[i].start + scenes[i].dur;
+// Each scene is on screen from a little before its voice line to a little before the next one.
+const win = scenes.map((s, i) => [Math.max(0, s.start - (s.lead ?? 0.35)), i + 1 < scenes.length ? scenes[i + 1].start - (scenes[i + 1].lead ?? 0.35) : TL.total]);
+const procs = [];          // per-frame procedural updates: fn(t)
+
+/* ---------- brand chrome ---------- */
+$('pillLogo').src = B.logo || 'img/logo.png'; $('pillName').textContent = B.name || '';
+$('pillLogo').onerror = () => $('pillLogo').remove();
+gsap.set('#logopill', { opacity: 0, y: -20 });
+tl.to('#logopill', { opacity: 1, y: 0, duration: .6, ease: 'power3.out' }, .4);
+
+/* ---------- scene builders ---------- */
+const build = {
+  hook(s, root, i) {
+    (s.cards || []).forEach((c, k) => {
+      const e = el('div', 'glass stat', `<div class="ic">${c.icon || ''}</div><div><div class="lb">${esc(c.label)}</div><div class="vl">0</div></div>`, root);
+      e.style.top = (560 + k * 250) + 'px';
+      tl.fromTo(e, { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: .55, ease: 'back.out(1.6)' }, S(i) - .2 + k * .25);
+      const vl = e.querySelector('.vl');
+      procs.push(t => { const k2 = Math.min(1, Math.max(0, (t - S(i)) / (s.countFor ?? 3.4))); if (t < END(i) + 1) vl.textContent = num((c.value || 0) * (1 - Math.pow(1 - k2, 3))) + (k2 > .98 && c.plus ? '+' : ''); });
+    });
+    const big = el('div', 'big', esc(s.big), root); gsap.set(big, { opacity: 0 });
+    const at = S(i) + (s.bigAt ?? Math.max(.5, s.dur - 1.2));
+    tl.to(root.querySelectorAll('.stat'), { opacity: .12, filter: 'blur(6px)', duration: .45 }, at - .1);
+    tl.fromTo(big, { scale: .7, opacity: 0 }, { scale: 1, opacity: 1, duration: .7, ease: 'back.out(1.8)' }, at);
+  },
+  text(s, root, i) {
+    const t = el('div', 'title', esc(s.title), root), u = el('div', 'sub', esc(s.sub || ''), root);
+    tl.fromTo(t, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: .7, ease: 'power3.out' }, S(i) - .1);
+    tl.fromTo(u, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: .7, ease: 'power3.out' }, S(i) + .5);
+  },
+  quote(s, root, i) {
+    // Sacred or quoted text: paste it verbatim from its source; never retype it.
+    const m = el('div', 'quoteMain', null, root);
+    m.style.direction = s.rtl ? 'rtl' : 'ltr'; if (s.font) m.style.fontFamily = s.font;
+    m.innerHTML = String(s.main).split(' ').map(w => `<span>${esc(w)}</span>`).join(' ');
+    const sub = el('div', 'quoteSub', esc(s.meaning || ''), root), ref = el('div', 'quoteRef', esc(s.ref || ''), root);
+    gsap.set([sub, ref], { opacity: 0 });
+    m.querySelectorAll('span').forEach((w, k) => tl.fromTo(w, { opacity: 0, y: 20, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: .9, ease: 'power2.out' }, S(i) + (s.wordsAt ?? .5) + k * (s.wordGap ?? .38)));
+    tl.fromTo(sub, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: .8 }, S(i) + (s.meaningAt ?? 2.3));
+    tl.to(ref, { opacity: 1, duration: .8 }, S(i) + (s.meaningAt ?? 2.3) + .7);
+    tl.to('#logopill', { opacity: 0, duration: .3 }, win[i][0]); tl.to('#logopill', { opacity: 1, duration: .4 }, win[i][1]);
+  },
+  reveal(s, root, i) {
+    const n = el('div', 'noor', null, root), l = el('div', 'revLogo', `<img src="${B.logo || 'img/logo.png'}">`, root);
+    const tg = el('div', 'revTag', esc(s.tagline || ''), root), sb = el('div', 'revSub', esc(s.sub || ''), root);
+    gsap.set(n, { scale: 0 }); gsap.set(l, { scale: .6, opacity: 0 }); gsap.set([tg, sb], { opacity: 0, y: 20 });
+    tl.to(n, { scale: 1, duration: 1.2, ease: 'expo.out' }, S(i) - .4);
+    tl.to(l, { scale: 1, opacity: 1, duration: 1, ease: 'back.out(1.3)' }, S(i) - .05);
+    tl.to(tg, { opacity: 1, y: 0, duration: .6 }, S(i) + .9); tl.to(sb, { opacity: 1, y: 0, duration: .6 }, S(i) + 1.3);
+    tl.to('#logopill', { opacity: 0, duration: .3 }, win[i][0]); tl.to('#logopill', { opacity: 1, duration: .4 }, win[i][1]);
+  },
+  feature(s, root, i) {
+    const ph = el('div', 'phone', `<div class="scr"><div class="isl"></div></div>`, root), scr = ph.querySelector('.scr');
+    if (s.phone) Object.assign(ph.style, s.phone);   // e.g. {"left":"50px","scale":".8"}
+    // screens: [{src, at}] crossfade in order; or frames: {dir, count, fps, startAt} for a screen recording.
+    const screens = s.screens || (s.screen ? [{ src: s.screen, at: 0 }] : []);
+    el('div', 'ph', esc(s.placeholder || 'App screen'), scr);   // shows until a real screen loads over it
+    screens.forEach((sc, k) => { const im = el('img', 's', null, scr); im.onerror = () => im.remove(); im.src = sc.src; if (k) { gsap.set(im, { opacity: 0 }); tl.to(im, { opacity: 1, duration: .5 }, S(i) + sc.at); } });
+    if (s.frames) {
+      const im = el('img', 's', null, scr), f = s.frames, pad = n => String(n).padStart(f.digits || 3, '0');
+      im.src = `${f.dir}/${f.prefix || 'f'}${pad(1)}.jpg`; im.dataset.rec = '1';
+      procs.push(t => { if (t < win[i][0] || t > win[i][1]) return; const k = Math.max(1, Math.min(f.count, 1 + Math.floor((t - S(i) - (f.startAt || 0)) * (f.fps || 30)))); const src = `${f.dir}/${f.prefix || 'f'}${pad(k)}.jpg`; if (!im.src.endsWith(src)) im.src = src; });
+    }
+    // Boxes and taps are in the screenshot's own pixels (1080 wide); the phone screen is 560 CSS px wide.
+    const k = 560 / (s.shotWidth || 1080);
+    (s.highlights || []).forEach(h => { const b = el('div', 'hl', null, scr); Object.assign(b.style, { left: h.box[0] * k + 'px', top: h.box[1] * k + 'px', width: h.box[2] * k + 'px', height: h.box[3] * k + 'px' });
+      tl.fromTo(b, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: .35, ease: 'power2.out' }, S(i) + h.at); tl.to(b, { opacity: 0, duration: .3 }, S(i) + h.at + (h.hold ?? 1.6)); });
+    (s.taps || []).forEach(p => { const d = el('div', 'tapdot', null, scr); Object.assign(d.style, { left: p.xy[0] * k + 'px', top: p.xy[1] * k + 'px' });
+      tl.fromTo(d, { opacity: 0, scale: .4 }, { opacity: 1, scale: 1, duration: .18 }, S(i) + p.at); tl.to(d, { opacity: 0, scale: 1.6, duration: .35 }, S(i) + p.at + .2); });
+    (s.chips || []).forEach(c => { const e = el('div', 'chip', esc(c.text), root); Object.assign(e.style, { left: c.xy[0] + 'px', top: c.xy[1] + 'px' });
+      tl.fromTo(e, { opacity: 0, scale: .7 }, { opacity: 1, scale: 1, duration: .45, ease: 'back.out(2.4)' }, S(i) + c.at); });
+    if (s.toast) { const e = el('div', 'toast', esc(s.toast.text), root); tl.fromTo(e, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: .5, ease: 'back.out(1.6)' }, S(i) + s.toast.at); }
+    tl.fromTo(ph, { y: 220, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: 'power3.out' }, win[i][0] + .15);
+  },
+  end(s, root, i) {
+    const c = el('div', 'endCard', `<img src="${B.logo || 'img/logo.png'}"><div class="endTag">${esc(s.tagline || '')}</div><div class="endSub">${esc(s.sub || '')}</div>`, root);
+    tl.fromTo(c, { y: 120, opacity: 0, scale: .92 }, { y: 0, opacity: 1, scale: 1, duration: .9, ease: 'power3.out' }, win[i][0] + .1);
+    const fs = el('div', 'feats', null, root);
+    (s.features || []).forEach((f, k) => { const e = el('div', 'feat', `<div class="i glass">${f.icon || ''}</div>${esc(f.label)}`, fs);
+      tl.fromTo(e, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: .45, ease: 'back.out(2)' }, S(i) + .4 + k * .12); });
+    if (s.stores) { const st = el('div', 'stores', null, root);
+      const gp = `<div class="store"><svg viewBox="0 0 24 24"><path fill="#34A853" d="M3.6 1.8 13.8 12 3.6 22.2c-.4-.2-.6-.6-.6-1.1V2.9c0-.5.2-.9.6-1.1z"/><path fill="#FBBC04" d="m17.2 8.6-3.4 3.4 3.4 3.4 3.9-2.2c.9-.5.9-1.9 0-2.4z"/><path fill="#EA4335" d="M13.8 12 3.6 22.2c.3.2.8.2 1.2 0l12.4-6.8z"/><path fill="#4285F4" d="M4.8 1.8c-.4-.2-.9-.2-1.2 0L13.8 12l3.4-3.4z"/></svg><div><small>${esc(s.storeLabel || 'Download on')}</small><b>Google Play</b></div></div>`;
+      const as = `<div class="store"><svg viewBox="0 0 24 24"><path fill="#fff" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.5-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4z"/></svg><div><small>${esc(s.storeLabel || 'Download on')}</small><b>App Store</b></div></div>`;
+      st.innerHTML = (s.stores.includes('play') ? gp : '') + (s.stores.includes('appstore') ? as : '');
+      tl.fromTo(st.children, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: .55, ease: 'power3.out', stagger: .15 }, S(i) + 1.3); }
+    if (s.site) { const e = el('div', 'site', esc(s.site), root); tl.fromTo(e, { opacity: 0 }, { opacity: 1, duration: .6 }, S(i) + 1.9); }
+    tl.to('#logopill', { opacity: 0, duration: .3 }, win[i][0]);
+  },
+};
+
+/* ---------- build scenes + windows ---------- */
+const chapters = []; let chapN = 0; const chapTotal = scenes.filter(s => s.type === 'feature' && s.chapter !== false).length;
+scenes.forEach((s, i) => {
+  const root = el('div', 'scene', null, $('scenes'));
+  if (!build[s.type]) throw new Error(`Unknown scene type "${s.type}" in scene ${i + 1}`);
+  build[s.type](s, root, i);
+  tl.fromTo(root, { opacity: 0 }, { opacity: 1, duration: .35, ease: 'power2.out' }, win[i][0]);
+  if (i < scenes.length - 1) tl.to(root, { opacity: 0, duration: .35, ease: 'power2.in' }, win[i][1] - .05);
+  if (s.type === 'feature' && s.chapter !== false) { chapN++; chapters.push({ at: win[i][0] + .15, end: win[i][1], no: `${BN(String(chapN).padStart(2, '0'))} / ${BN(String(chapTotal).padStart(2, '0'))}`, h: s.title || '', s: s.sub || '' }); }
+});
+chapters.forEach(c => { tl.to('#chap', { opacity: 1, duration: .3 }, c.at); tl.to('#chap', { opacity: 0, duration: .25 }, c.end - .2);
+  tl.fromTo('#chapH', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'power3.out' }, c.at + .05);
+  tl.fromTo('#chapS', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'power3.out' }, c.at + .18); });
+
+/* ---------- captions: each voice line split at punctuation, timed by length ---------- */
+const capChunks = [];
+scenes.forEach(s => {
+  if (s.caption === false || !s.text) return;
+  const clean = s.text.replace(/\[[^\]]*\]/g, '').trim();
+  const parts = clean.split(/(?<=[…—,।!?.])\s*/).filter(p => p.replace(/[…—,।!?.\s]/g, '').length);
+  const tot = parts.reduce((a, p) => a + p.length, 0); let t = s.start;
+  parts.forEach(p => { const d = s.dur * p.length / tot; capChunks.push([t, t + d + .15, p.replace(/[,—]\s*$/, '')]); t += d; });
+});
+const hl = TL.captionHighlights || [];
+let lastCap = null, lastChap = null;
+
+/* ---------- floating dust ---------- */
+const dots = Array.from({ length: 26 }, () => el('div', 'dot', null, $('dust')));
+const rnd = i => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); };
+
+function frame(t) {
+  dots.forEach((d, i) => { const sp = 12 + rnd(i) * 26, x = rnd(i + 40) * 1080 + Math.sin(t * .4 + i) * 30, y = (rnd(i + 90) * 2100 - t * sp) % 2100;
+    d.style.transform = `translate(${x}px,${(y < 0 ? y + 2100 : y) - 90}px) scale(${.5 + rnd(i + 7)})`; d.style.opacity = .25 + .35 * Math.sin(t * 1.3 + i * 1.7) ** 2; });
+  procs.forEach(p => p(t));
+  let c = null; for (const ch of chapters) if (t >= ch.at) c = ch;
+  if (c && c !== lastChap) { $('chapNo').textContent = c.no; $('chapH').textContent = c.h; $('chapS').textContent = c.s; lastChap = c; }
+  const cc = capChunks.find(x => t >= x[0] && t < x[1]); const cp = cc ? cc[2] : '';
+  if (cp !== lastCap) { let h = esc(cp); hl.forEach(w => h = h.split(w).join('<em>' + w + '</em>')); $('capT').innerHTML = h; $('cap').style.opacity = cp ? 1 : 0; lastCap = cp; }
+}
+
+window.DURATION = TL.total;
+window.seek = async t => {
+  tl.time(t, false); frame(t);
+  await Promise.all([...document.querySelectorAll('img[data-rec]')].map(i => i.decode().catch(() => {})));
+  await new Promise(r => requestAnimationFrame(() => r()));
+};
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map(i => i.decode().catch(() => {}))]);
+</script>
+</body>
+</html>
